@@ -11,6 +11,10 @@ namespace RogueCastle
 {
     public class SaveGameManager
     {
+        // Guns mod: separate save container so modded saves (spell IDs >= 16) never reach
+        // the vanilla Steam saves ("RogueLegacyStorageContainer"), which Steam Cloud syncs.
+        public const string STORAGE_CONTAINER_NAME = "RogueLegacyGunsStorageContainer";
+
         private StorageContainer m_storageContainer;
         private string m_fileNamePlayer = "RogueLegacyPlayer.rcdat";
         private string m_fileNameUpgrades = "RogueLegacyBP.rcdat";
@@ -57,7 +61,7 @@ namespace RogueCastle
                 aSyncResult.AsyncWaitHandle.WaitOne();
                 StorageDevice storageDevice = StorageDevice.EndShowSelector(aSyncResult);
                 aSyncResult.AsyncWaitHandle.Close();
-                aSyncResult = storageDevice.BeginOpenContainer("RogueLegacyStorageContainer", null, null);
+                aSyncResult = storageDevice.BeginOpenContainer(STORAGE_CONTAINER_NAME, null, null);
                 aSyncResult.AsyncWaitHandle.WaitOne();
                 m_storageContainer = storageDevice.EndOpenContainer(aSyncResult);
                 aSyncResult.AsyncWaitHandle.Close();
