@@ -593,6 +593,27 @@ namespace RogueCastle
 
             if (LevelEV.ENABLE_DEBUG_INPUT == true)
                 HandleDebugInput();
+
+            if (SpellEV.GUNS_DEBUG == true && m_lockControls == false && IsKilled == false && InputManager.JustPressed(Keys.F9, null))
+                CycleGunDebug();
+        }
+
+        // Guns mod debug: F9 cycles Pistol -> Shotgun -> SMG (any other spell -> Pistol).
+        private void CycleGunDebug()
+        {
+            byte spell = Game.PlayerStats.Spell;
+            if (spell == SpellType.Pistol)
+                spell = SpellType.Shotgun;
+            else if (spell == SpellType.Shotgun)
+                spell = SpellType.SMG;
+            else
+                spell = SpellType.Pistol;
+
+            Game.PlayerStats.Spell = spell;
+            if (Game.PlayerStats.Class == ClassType.Wizard2)
+                Game.PlayerStats.WizardSpellList = SpellType.GetNext3Spells(); // guns are in the Wizard list, so IndexOf() finds them
+            m_levelScreen.UpdatePlayerSpellIcon();
+            m_levelScreen.TextManager.DisplayStringText(SpellType.ToStringID(spell), Color.Yellow, new Vector2(this.X, this.Bounds.Top - 50));
         }
 
         private void HandleDebugInput()
@@ -607,7 +628,7 @@ namespace RogueCastle
             if (m_debugInputMap.JustPressed(DEBUG_INPUT_SWAPWEAPON))
             {
                 Game.PlayerStats.Spell++;
-                if (Game.PlayerStats.Spell > SpellType.Total)
+                if (Game.PlayerStats.Spell >= SpellType.Total) // was '>' (off-by-one, allowed the invalid id == Total)
                     Game.PlayerStats.Spell = 1;
                 m_levelScreen.UpdatePlayerSpellIcon();
             }

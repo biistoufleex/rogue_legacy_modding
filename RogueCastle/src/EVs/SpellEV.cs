@@ -25,6 +25,9 @@ namespace RogueCastle
         public const string RAPIDDAGGER_Name = "Rapid Dagger"; public const int RAPIDDAGGER_Cost = 30; public const float RAPIDDAGGER_Damage = 0.75f; public const float RAPIDDAGGER_XVal = 0f; public const float RAPIDDAGGER_YVal = 0f; public const int RAPIDDAGGER_Rarity = 1;
         public const string DRAGONFIRENEO_Name = "Dragon Fire Neo"; public const int DRAGONFIRENEO_Cost = 0; public const float DRAGONFIRENEO_Damage = 1f; public const float DRAGONFIRENEO_XVal = 0.75f; public const float DRAGONFIRENEO_YVal = 0f; public const int DRAGONFIRENEO_Rarity = 3;
 
+        // Guns mod: F9 in-game cycles the current spell Pistol -> Shotgun -> SMG. Set to false to disable.
+        public const bool GUNS_DEBUG = true;
+
         // Guns mod. Damage = multiplier of TotalMagicDamage (per bullet). XVal = bullet lifespan in seconds (= range).
         public const string PISTOL_Name = "Pistol"; public const int PISTOL_Cost = 5; public const float PISTOL_Damage = 1f; public const float PISTOL_XVal = 1.5f; public const float PISTOL_YVal = 0f; public const int PISTOL_Rarity = 1;
         public const float PISTOL_Speed = 2200f; public const float PISTOL_Scale = 3f;

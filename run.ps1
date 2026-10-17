@@ -2,9 +2,11 @@
 # Usage:  .\run.ps1            (build, copy missing files, launch)
 #         .\run.ps1 -NoLaunch  (build + copy only)
 #         .\run.ps1 -NoBuild   (launch the last build)
+#         .\run.ps1 -KillRunning (close a running modded game first)
 param(
     [switch]$NoBuild,
     [switch]$NoLaunch,
+    [switch]$KillRunning,
     [string]$SteamDir = "C:\Program Files (x86)\Steam\steamapps\common\Rogue Legacy"
 )
 
@@ -13,6 +15,13 @@ $repo    = $PSScriptRoot
 $outDir  = Join-Path $repo "RogueCastle\bin\x64\Debug\net40"
 $fnalibs = Join-Path $repo "..\fnalibs\x64"
 $fnalibsUrl = "https://github.com/FNA-XNA/fnalibs-dailies/actions (latest 'CI' run -> artifact 'fnalibs')"
+
+# 0. A running modded game locks RogueLegacy.exe and makes the build fail
+$running = Get-Process RogueLegacy -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq (Join-Path $outDir "RogueLegacy.exe") }
+if ($running -and -not $NoBuild) {
+    if ($KillRunning) { $running | Stop-Process; Start-Sleep -Milliseconds 500 }
+    else { throw "The modded game is still running (PID $($running.Id)). Close it, or rerun with -KillRunning." }
+}
 
 # 1. Build
 if (-not $NoBuild) {
