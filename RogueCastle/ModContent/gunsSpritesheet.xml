@@ -1,0 +1,40 @@
+<xml>
+  <instance name="GunPistolIcon_Sprite" index="0" posX="2" posY="2" anchorX="14" anchorY="9" width="28" height="19"/>
+  <instance name="GunShotgunIcon_Sprite" index="0" posX="32" posY="2" anchorX="17" anchorY="10" width="34" height="20"/>
+  <instance name="GunSMGIcon_Sprite" index="0" posX="68" posY="2" anchorX="15" anchorY="9" width="31" height="18"/>
+  <instance name="GunPistolBullet_Sprite" index="0" posX="101" posY="2" anchorX="9" anchorY="4" width="19" height="8"/>
+  <instance name="GunSMGBullet_Sprite" index="0" posX="122" posY="2" anchorX="6" anchorY="4" width="13" height="8"/>
+  <instance name="GunPellet_Sprite" index="0" posX="137" posY="2" anchorX="5" anchorY="5" width="10" height="10"/>
+  <instance name="GunPistolBulletExplosion_Sprite" index="0" posX="149" posY="2" anchorX="1" anchorY="1" width="3" height="3"/>
+  <instance name="GunPistolBulletExplosion_Sprite" index="1" posX="154" posY="2" anchorX="2" anchorY="2" width="5" height="5"/>
+  <instance name="GunPistolBulletExplosion_Sprite" index="2" posX="161" posY="2" anchorX="3" anchorY="3" width="7" height="7"/>
+  <instance name="GunPistolBulletExplosion_Sprite" index="3" posX="170" posY="2" anchorX="5" anchorY="5" width="11" height="11"/>
+  <instance name="GunPelletExplosion_Sprite" index="0" posX="183" posY="2" anchorX="1" anchorY="1" width="3" height="3"/>
+  <instance name="GunPelletExplosion_Sprite" index="1" posX="188" posY="2" anchorX="2" anchorY="2" width="5" height="5"/>
+  <instance name="GunPelletExplosion_Sprite" index="2" posX="195" posY="2" anchorX="3" anchorY="3" width="7" height="7"/>
+  <instance name="GunSMGBulletExplosion_Sprite" index="0" posX="204" posY="2" anchorX="1" anchorY="1" width="3" height="3"/>
+  <instance name="GunSMGBulletExplosion_Sprite" index="1" posX="209" posY="2" anchorX="2" anchorY="2" width="5" height="5"/>
+  <instance name="GunSMGBulletExplosion_Sprite" index="2" posX="216" posY="2" anchorX="3" anchorY="3" width="7" height="7"/>
+  <animation frame="1" name="GunPistolIcon_Sprite" index="0" duration="1" label=""/>
+  <animation frame="1" name="GunShotgunIcon_Sprite" index="0" duration="1" label=""/>
+  <animation frame="1" name="GunSMGIcon_Sprite" index="0" duration="1" label=""/>
+  <animation frame="1" name="GunPistolBullet_Sprite" index="0" duration="1" label="">
+    <rectangle x="-9" y="-4" width="19" height="8" rotation="0" type="1"/>
+  </animation>
+  <animation frame="1" name="GunSMGBullet_Sprite" index="0" duration="1" label="">
+    <rectangle x="-6" y="-4" width="13" height="8" rotation="0" type="1"/>
+  </animation>
+  <animation frame="1" name="GunPellet_Sprite" index="0" duration="1" label="">
+    <rectangle x="-5" y="-5" width="10" height="10" rotation="0" type="1"/>
+  </animation>
+  <animation frame="1" name="GunPistolBulletExplosion_Sprite" index="0" duration="1" label=""/>
+  <animation frame="2" name="GunPistolBulletExplosion_Sprite" index="1" duration="1" label=""/>
+  <animation frame="3" name="GunPistolBulletExplosion_Sprite" index="2" duration="1" label=""/>
+  <animation frame="4" name="GunPistolBulletExplosion_Sprite" index="3" duration="1" label=""/>
+  <animation frame="1" name="GunPelletExplosion_Sprite" index="0" duration="1" label=""/>
+  <animation frame="2" name="GunPelletExplosion_Sprite" index="1" duration="1" label=""/>
+  <animation frame="3" name="GunPelletExplosion_Sprite" index="2" duration="1" label=""/>
+  <animation frame="1" name="GunSMGBulletExplosion_Sprite" index="0" duration="1" label=""/>
+  <animation frame="2" name="GunSMGBulletExplosion_Sprite" index="1" duration="1" label=""/>
+  <animation frame="3" name="GunSMGBulletExplosion_Sprite" index="2" duration="1" label=""/>
+</xml>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,12 +30,18 @@ namespace RogueCastle
 
         // Guns mod. Damage = multiplier of TotalMagicDamage (per bullet). XVal = bullet lifespan in seconds (= range).
         public const string PISTOL_Name = "Pistol"; public const int PISTOL_Cost = 5; public const float PISTOL_Damage = 1f; public const float PISTOL_XVal = 1.5f; public const float PISTOL_YVal = 0f; public const int PISTOL_Rarity = 1;
-        public const float PISTOL_Speed = 2200f; public const float PISTOL_Scale = 3f;
+        public const float PISTOL_Speed = 2200f; public const float PISTOL_Scale = 2f;
         public const string SHOTGUN_Name = "Shotgun"; public const int SHOTGUN_Cost = 15; public const float SHOTGUN_Damage = 0.5f; public const float SHOTGUN_XVal = 0.28f; public const float SHOTGUN_YVal = 0f; public const int SHOTGUN_Rarity = 1;
-        public const int SHOTGUN_Pellets = 5; public const float SHOTGUN_SpreadAngle = 10f; public const float SHOTGUN_SpeedMin = 1500f; public const float SHOTGUN_SpeedMax = 1900f; public const float SHOTGUN_Scale = 2.25f;
+        public const int SHOTGUN_Pellets = 5; public const float SHOTGUN_SpreadAngle = 10f; public const float SHOTGUN_SpeedMin = 1500f; public const float SHOTGUN_SpeedMax = 1900f; public const float SHOTGUN_Scale = 1.75f;
         public const string SMG_Name = "SMG"; public const int SMG_Cost = 3; public const float SMG_Damage = 0.35f; public const float SMG_XVal = 0.9f; public const float SMG_YVal = 0f; public const int SMG_Rarity = 1;
-        public const float SMG_FireDelay = 0.09f; public const int SMG_SpreadAngle = 4; public const float SMG_Speed = 2000f; public const float SMG_Scale = 2f;
+        public const float SMG_FireDelay = 0.09f; public const int SMG_SpreadAngle = 4; public const float SMG_Speed = 2000f; public const float SMG_Scale = 1.75f;
 
+
+        // Guns mod: custom sprite from Content/Mods/gunsSpritesheet if it was loaded, vanilla fallback otherwise.
+        public static string GunSprite(string modSprite, string vanillaSprite)
+        {
+            return SpriteSystem.SpriteLibrary.ContainsSprite(modSprite) ? modSprite : vanillaSprite;
+        }
 
         public static ProjectileData GetProjData(byte spellType, PlayerObj player)
         {
@@ -239,8 +245,9 @@ namespace RogueCastle
                     break;
                 case (SpellType.Pistol):
                 case (SpellType.SMG):
-                    // Straight, gravity-less tracer bullet (dagger sprite = thin line).
-                    projData.SpriteName = "SpellDagger_Sprite";
+                    // Straight, gravity-less bullet. Fallback: dagger sprite (thin line).
+                    projData.SpriteName = (spellType == SpellType.Pistol) ? GunSprite("GunPistolBullet_Sprite", "SpellDagger_Sprite")
+                                                                          : GunSprite("GunSMGBullet_Sprite", "SpellDagger_Sprite");
                     projData.Angle = Vector2.Zero;
                     projData.SourceAnchor = new Vector2(50, 0);
                     float bulletSpeed = (spellType == SpellType.Pistol) ? PISTOL_Speed : SMG_Speed;
@@ -258,7 +265,7 @@ namespace RogueCastle
                     // One pellet; PlayerObj fires SHOTGUN_Pellets of them with different AngleOffsets.
                     // Must have a matching "<Name>Explosion_Sprite": ProjectileObj.RunDestroyAnimation() switches to it on impact
                     // (LastBossOrbProjectile_Sprite has none -> KeyNotFoundException crash).
-                    projData.SpriteName = "PlantProjectile_Sprite";
+                    projData.SpriteName = GunSprite("GunPellet_Sprite", "PlantProjectile_Sprite");
                     projData.Angle = Vector2.Zero;
                     projData.SourceAnchor = new Vector2(50, 0);
                     projData.Speed = new Vector2(SHOTGUN_SpeedMin, SHOTGUN_SpeedMax); // X != Y => random speed per pellet

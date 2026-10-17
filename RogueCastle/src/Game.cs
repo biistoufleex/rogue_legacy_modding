@@ -588,6 +588,12 @@ namespace RogueCastle
             SpriteLibrary.LoadSpritesheet(Content, "GameSpritesheets\\language2Spritesheet", false);
             SpriteLibrary.LoadSpritesheet(Content, "GameSpritesheets\\language3Spritesheet", false);
             SpriteLibrary.LoadSpritesheet(Content, "GameSpritesheets\\blitworksSpritesheet", false);
+
+            // Guns mod: raw PNG + XML (not an .xnb), built by tools/build-gun-sprites.ps1. Optional:
+            // SpellEV.GunSprite() falls back to vanilla sprites when it is missing.
+            string gunsSheet = Path.Combine(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Content.RootDirectory), Path.Combine("Mods", "gunsSpritesheet.png"));
+            if (File.Exists(gunsSheet))
+                SpriteLibrary.LoadSpritesheet(GraphicsDevice, gunsSheet, false, true); // PNG is straight alpha -> premultiply like the .xnb sheets
         }
 
         public void LoadAllEffects()

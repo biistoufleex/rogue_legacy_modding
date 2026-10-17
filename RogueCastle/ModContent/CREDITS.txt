@@ -1,0 +1,5 @@
+Guns mod sprites (gunsSpritesheet.png), all CC0 / public domain:
+- Weapon icons: "Guns" by SnoopethDuckDuck - https://snoopethduckduck.itch.io/guns
+  Pack 2 #26 (Pistol), Pack 1 #51 (Shotgun), Pack 2 #9 (SMG), 2px outline variants.
+- Bullets and impact sparks: "Bullet Collection 1 (M484)" by Master484 - https://opengameart.org/content/bullet-collection-1-m484
+Regenerate with: tools/build-gun-sprites.ps1 (expects the packs extracted in ../gun-assets).

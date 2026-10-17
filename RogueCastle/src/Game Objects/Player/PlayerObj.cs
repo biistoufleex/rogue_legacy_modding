@@ -3014,7 +3014,8 @@ namespace RogueCastle
                         SoundManager.PlaySound("Cast_Dagger");
                         ProjectileObj proj = m_levelScreen.ProjectileManager.FireProjectile(projData);
                         proj.Spell = spellType;
-                        proj.TextureColor = (spellType == SpellType.Pistol) ? Color.Gold : Color.Yellow;
+                        if (projData.SpriteName == "SpellDagger_Sprite") // only tint the vanilla fallback; mod bullets are already coloured
+                            proj.TextureColor = (spellType == SpellType.Pistol) ? Color.Gold : Color.Yellow;
                         m_levelScreen.ImpactEffectPool.SpellCastEffect(proj.Position, proj.Rotation, megaSpell);
                         this.CurrentMana -= manaCost;
                     }

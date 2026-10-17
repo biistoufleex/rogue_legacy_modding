@@ -11,6 +11,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Guns mod: custom sprites copied to <output>/Content/Mods -->
+    <!-- "Update" (not Include): the SDK already globs these files as None items -->
+    <None Update="ModContent\**" Link="Content\Mods\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\DS2DEngine\DS2DEngine.csproj">
       <Project>{050AF89B-5F49-455E-93C1-BFE7FF9506D2}</Project>
       <Name>DS2DEngine</Name>

@@ -158,13 +158,13 @@ namespace RogueCastle
                     return "DragonFireIcon_Sprite";
                 case (RapidDagger):
                     return "RapidDaggerIcon_Sprite";
-                // Guns reuse icons that Knight/Mage never see in normal play, so they stay recognisable.
+                // Guns: CC0 icons from Content/Mods; fallback = vanilla icons Knight/Mage never see in normal play.
                 case (Pistol):
-                    return "DragonFireIcon_Sprite";
+                    return SpellEV.GunSprite("GunPistolIcon_Sprite", "DragonFireIcon_Sprite");
                 case (Shotgun):
-                    return "TimeBombIcon_Sprite";
+                    return SpellEV.GunSprite("GunShotgunIcon_Sprite", "TimeBombIcon_Sprite");
                 case (SMG):
-                    return "RapidDaggerIcon_Sprite";
+                    return SpellEV.GunSprite("GunSMGIcon_Sprite", "RapidDaggerIcon_Sprite");
             }
             return "DaggerIcon_Sprite";
         }

@@ -34,11 +34,13 @@ if (-not $NoBuild) {
 if (-not (Test-Path (Join-Path $outDir "RogueLegacy.exe"))) { throw "RogueLegacy.exe not found in $outDir" }
 
 # 2. Content (copied from Steam, never modified there)
-if (-not (Test-Path (Join-Path $outDir "Content"))) {
+# (test GameSpritesheets, not Content: the build itself creates Content\Mods for the mod sprites)
+if (-not (Test-Path (Join-Path $outDir "Content\GameSpritesheets"))) {
     $steamContent = Join-Path $SteamDir "Content"
     if (-not (Test-Path $steamContent)) { throw "Steam Content not found: $steamContent (use -SteamDir)" }
     Write-Host "Copying Content from Steam install (~320 MB)..."
-    Copy-Item $steamContent (Join-Path $outDir "Content") -Recurse
+    New-Item -ItemType Directory -Force (Join-Path $outDir "Content") | Out-Null
+    Copy-Item (Join-Path $steamContent "*") (Join-Path $outDir "Content") -Recurse -Force
 }
 
 # 3. Native FNA libs (SDL3, FNA3D, FAudio, ...)
