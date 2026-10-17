@@ -5769,6 +5769,24 @@
   <data name="LOC_ID_SPELL_TYPE_15_F" xml:space="preserve">
     <value>Poignard véloce</value>
   </data>
+  <data name="LOC_ID_SPELL_TYPE_PISTOL" xml:space="preserve">
+    <value>Pistolet</value>
+  </data>
+  <data name="LOC_ID_SPELL_TYPE_SHOTGUN" xml:space="preserve">
+    <value>Fusil à pompe</value>
+  </data>
+  <data name="LOC_ID_SPELL_TYPE_SMG" xml:space="preserve">
+    <value>Mitraillette</value>
+  </data>
+  <data name="LOC_ID_SPELL_DESC_PISTOL" xml:space="preserve">
+    <value>Tire une balle rapide droit devant.</value>
+  </data>
+  <data name="LOC_ID_SPELL_DESC_SHOTGUN" xml:space="preserve">
+    <value>Tire une gerbe de plombs à courte portée.</value>
+  </data>
+  <data name="LOC_ID_SPELL_DESC_SMG" xml:space="preserve">
+    <value>Maintenir pour arroser de balles.</value>
+  </data>
   <data name="LOC_ID_SPELL_TYPE_1_F" xml:space="preserve">
     <value>Poignard</value>
   </data>

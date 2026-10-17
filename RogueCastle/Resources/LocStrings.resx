@@ -3456,6 +3456,24 @@
   <data name="LOC_ID_SPELL_TYPE_15" xml:space="preserve">
     <value>Rapid Dagger</value>
   </data>
+  <data name="LOC_ID_SPELL_TYPE_PISTOL" xml:space="preserve">
+    <value>Pistol</value>
+  </data>
+  <data name="LOC_ID_SPELL_TYPE_SHOTGUN" xml:space="preserve">
+    <value>Shotgun</value>
+  </data>
+  <data name="LOC_ID_SPELL_TYPE_SMG" xml:space="preserve">
+    <value>SMG</value>
+  </data>
+  <data name="LOC_ID_SPELL_DESC_PISTOL" xml:space="preserve">
+    <value>Fire a fast bullet straight ahead.</value>
+  </data>
+  <data name="LOC_ID_SPELL_DESC_SHOTGUN" xml:space="preserve">
+    <value>Blast a short-range spread of pellets.</value>
+  </data>
+  <data name="LOC_ID_SPELL_DESC_SMG" xml:space="preserve">
+    <value>Hold to spray bullets.</value>
+  </data>
   <data name="LOC_ID_SPELL_TYPE_2" xml:space="preserve">
     <value>Axe</value>
   </data>

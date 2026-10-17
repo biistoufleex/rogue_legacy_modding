@@ -999,7 +999,20 @@ namespace RogueCastle
                     fireballCasted = true;
                 }
 
-                if (m_spellCastDelay <= 0 || Game.PlayerStats.Class == ClassType.Dragon)
+                // Guns mod: SMG fires every SMG_FireDelay while the spell key is held (same timer as DragonFireNeo).
+                bool smgEquipped = Game.PlayerStats.Spell == SpellType.SMG; // captured before CastSpell (Savant trait can change the spell)
+                if (smgEquipped && Game.GlobalInput.Pressed(InputMapType.PLAYER_SPELL1) && m_rapidSpellCastDelay <= 0)
+                {
+                    int smgCost = (int)(SpellEV.GetManaCost(SpellType.SMG) * (1 - SkillSystem.GetSkill(SkillType.Mana_Cost_Down).ModifierAmount));
+                    // Out of mana: only play the error sound on the initial press, not every tick.
+                    if (CurrentMana >= smgCost || Game.GlobalInput.JustPressed(InputMapType.PLAYER_SPELL1))
+                    {
+                        m_rapidSpellCastDelay = SpellEV.SMG_FireDelay;
+                        CastSpell(false);
+                    }
+                }
+
+                if (smgEquipped == false && (m_spellCastDelay <= 0 || Game.PlayerStats.Class == ClassType.Dragon))
                 {
                     if (Game.GlobalInput.JustPressed(InputMapType.PLAYER_SPELL1) || (Game.PlayerStats.Class == ClassType.Dragon && Game.GlobalInput.JustPressed(InputMapType.PLAYER_ATTACK)))
                     {
@@ -2661,7 +2674,7 @@ namespace RogueCastle
 
             if (this.CurrentMana < manaCost)
                 SoundManager.PlaySound("Error_Spell");
-            else if (spellType != SpellType.Translocator && spellType != SpellType.Nuke && m_damageShieldCast == false && manaCost > 0)
+            else if (spellType != SpellType.Translocator && spellType != SpellType.Nuke && spellType != SpellType.SMG && m_damageShieldCast == false && manaCost > 0) // SMG: no "-3 mp" popup spam at 10 shots/s
                 m_levelScreen.TextManager.DisplayNumberStringText(-manaCost, "LOC_ID_SKILL_SCREEN_15" /*"mp"*/, Color.SkyBlue, new Vector2(this.X, this.Bounds.Top));
 
             if (spellType != SpellType.Bounce && spellType != SpellType.DamageShield)
@@ -2968,6 +2981,37 @@ namespace RogueCastle
                     {
                         this.CurrentMana -= manaCost;
                         ThrowDaggerProjectiles();
+                    }
+                    break;
+                case (SpellType.Pistol):
+                case (SpellType.SMG): // SMG: one bullet per call, auto-fire is handled in InputControls().
+                    if (this.CurrentMana >= manaCost && activateSecondary == false)
+                    {
+                        if (spellType == SpellType.SMG)
+                            projData.AngleOffset = CDGMath.RandomInt(-SpellEV.SMG_SpreadAngle, SpellEV.SMG_SpreadAngle);
+
+                        SoundManager.PlaySound("Cast_Dagger");
+                        ProjectileObj proj = m_levelScreen.ProjectileManager.FireProjectile(projData);
+                        proj.Spell = spellType;
+                        proj.TextureColor = (spellType == SpellType.Pistol) ? Color.Gold : Color.Yellow;
+                        m_levelScreen.ImpactEffectPool.SpellCastEffect(proj.Position, proj.Rotation, megaSpell);
+                        this.CurrentMana -= manaCost;
+                    }
+                    break;
+                case (SpellType.Shotgun):
+                    if (this.CurrentMana >= manaCost && activateSecondary == false)
+                    {
+                        SoundManager.PlaySound("Enemy_WallTurret_Fire_01", "Enemy_WallTurret_Fire_02", "Enemy_WallTurret_Fire_03", "Enemy_WallTurret_Fire_04");
+                        ProjectileObj proj = null;
+                        for (int i = 0; i < SpellEV.SHOTGUN_Pellets; i++)
+                        {
+                            // Fan centred on 0: with 5 pellets and 10 deg => -20, -10, 0, 10, 20.
+                            projData.AngleOffset = (i - (SpellEV.SHOTGUN_Pellets - 1) / 2f) * SpellEV.SHOTGUN_SpreadAngle;
+                            proj = m_levelScreen.ProjectileManager.FireProjectile(projData);
+                            proj.Spell = spellType;
+                        }
+                        m_levelScreen.ImpactEffectPool.SpellCastEffect(proj.Position, 0, megaSpell);
+                        this.CurrentMana -= manaCost;
                     }
                     break;
             }

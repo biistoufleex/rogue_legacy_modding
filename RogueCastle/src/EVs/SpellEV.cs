@@ -23,7 +23,15 @@ namespace RogueCastle
         public const string LASER_Name = "Laser"; public const int LASER_Cost = 15; public const float LASER_Damage = 1f; public const float LASER_XVal = 5f; public const float LASER_YVal = 0f; public const int LASER_Rarity = 3;
         public const string DRAGONFIRE_Name = "Dragon Fire"; public const int DRAGONFIRE_Cost = 15; public const float DRAGONFIRE_Damage = 1f; public const float DRAGONFIRE_XVal = 0.35f; public const float DRAGONFIRE_YVal = 0f; public const int DRAGONFIRE_Rarity = 3;
         public const string RAPIDDAGGER_Name = "Rapid Dagger"; public const int RAPIDDAGGER_Cost = 30; public const float RAPIDDAGGER_Damage = 0.75f; public const float RAPIDDAGGER_XVal = 0f; public const float RAPIDDAGGER_YVal = 0f; public const int RAPIDDAGGER_Rarity = 1;
-        public const string DRAGONFIRENEO_Name = "Dragon Fire Neo"; public const int DRAGONFIRENEO_Cost = 0; public const float DRAGONFIRENEO_Damage = 1f; public const float DRAGONFIRENEO_XVal = 0.75f; public const float DRAGONFIRENEO_YVal = 0f; public const int DRAGONFIRENEO_Rarity = 3;		
+        public const string DRAGONFIRENEO_Name = "Dragon Fire Neo"; public const int DRAGONFIRENEO_Cost = 0; public const float DRAGONFIRENEO_Damage = 1f; public const float DRAGONFIRENEO_XVal = 0.75f; public const float DRAGONFIRENEO_YVal = 0f; public const int DRAGONFIRENEO_Rarity = 3;
+
+        // Guns mod. Damage = multiplier of TotalMagicDamage (per bullet). XVal = bullet lifespan in seconds (= range).
+        public const string PISTOL_Name = "Pistol"; public const int PISTOL_Cost = 5; public const float PISTOL_Damage = 1f; public const float PISTOL_XVal = 1.5f; public const float PISTOL_YVal = 0f; public const int PISTOL_Rarity = 1;
+        public const float PISTOL_Speed = 2200f; public const float PISTOL_Scale = 3f;
+        public const string SHOTGUN_Name = "Shotgun"; public const int SHOTGUN_Cost = 15; public const float SHOTGUN_Damage = 0.5f; public const float SHOTGUN_XVal = 0.28f; public const float SHOTGUN_YVal = 0f; public const int SHOTGUN_Rarity = 1;
+        public const int SHOTGUN_Pellets = 5; public const float SHOTGUN_SpreadAngle = 10f; public const float SHOTGUN_SpeedMin = 1500f; public const float SHOTGUN_SpeedMax = 1900f; public const float SHOTGUN_Scale = 2f;
+        public const string SMG_Name = "SMG"; public const int SMG_Cost = 3; public const float SMG_Damage = 0.35f; public const float SMG_XVal = 0.9f; public const float SMG_YVal = 0f; public const int SMG_Rarity = 1;
+        public const float SMG_FireDelay = 0.09f; public const int SMG_SpreadAngle = 4; public const float SMG_Speed = 2000f; public const float SMG_Scale = 2f;
 
 
         public static ProjectileData GetProjData(byte spellType, PlayerObj player)
@@ -226,6 +234,37 @@ namespace RogueCastle
                     projData.CollidesWithTerrain = false;
                     projData.LockPosition = true;
                     break;
+                case (SpellType.Pistol):
+                case (SpellType.SMG):
+                    // Straight, gravity-less tracer bullet (dagger sprite = thin line).
+                    projData.SpriteName = "SpellDagger_Sprite";
+                    projData.Angle = Vector2.Zero;
+                    projData.SourceAnchor = new Vector2(50, 0);
+                    float bulletSpeed = (spellType == SpellType.Pistol) ? PISTOL_Speed : SMG_Speed;
+                    float bulletScale = (spellType == SpellType.Pistol) ? PISTOL_Scale : SMG_Scale;
+                    projData.Speed = new Vector2(bulletSpeed, bulletSpeed);
+                    projData.Lifespan = (spellType == SpellType.Pistol) ? PISTOL_XVal : SMG_XVal;
+                    projData.IsWeighted = false;
+                    projData.RotationSpeed = 0;
+                    projData.CollidesWithTerrain = true;
+                    projData.DestroysWithTerrain = true;
+                    projData.IgnoreInvincibleCounter = (spellType == SpellType.SMG); // otherwise enemy i-frames eat most SMG bullets
+                    projData.Scale = new Vector2(bulletScale, bulletScale);
+                    break;
+                case (SpellType.Shotgun):
+                    // One pellet; PlayerObj fires SHOTGUN_Pellets of them with different AngleOffsets.
+                    projData.SpriteName = "LastBossOrbProjectile_Sprite";
+                    projData.Angle = Vector2.Zero;
+                    projData.SourceAnchor = new Vector2(50, 0);
+                    projData.Speed = new Vector2(SHOTGUN_SpeedMin, SHOTGUN_SpeedMax); // X != Y => random speed per pellet
+                    projData.Lifespan = SHOTGUN_XVal;
+                    projData.IsWeighted = false;
+                    projData.RotationSpeed = 0;
+                    projData.CollidesWithTerrain = true;
+                    projData.DestroysWithTerrain = true;
+                    projData.IgnoreInvincibleCounter = true; // all pellets can hit the same enemy
+                    projData.Scale = new Vector2(SHOTGUN_Scale, SHOTGUN_Scale);
+                    break;
             }
 
             return projData;
@@ -267,6 +306,12 @@ namespace RogueCastle
                     return SpellEV.DRAGONFIRENEO_Cost;
                 case (SpellType.RapidDagger):
                     return SpellEV.RAPIDDAGGER_Cost;
+                case (SpellType.Pistol):
+                    return SpellEV.PISTOL_Cost;
+                case (SpellType.Shotgun):
+                    return SpellEV.SHOTGUN_Cost;
+                case (SpellType.SMG):
+                    return SpellEV.SMG_Cost;
             }
 
             return 0;
@@ -308,6 +353,12 @@ namespace RogueCastle
                     return SpellEV.DRAGONFIRENEO_Rarity;
                 case (SpellType.RapidDagger):
                     return SpellEV.RAPIDDAGGER_Rarity;
+                case (SpellType.Pistol):
+                    return SpellEV.PISTOL_Rarity;
+                case (SpellType.Shotgun):
+                    return SpellEV.SHOTGUN_Rarity;
+                case (SpellType.SMG):
+                    return SpellEV.SMG_Rarity;
             }
 
             return 0;
@@ -349,6 +400,12 @@ namespace RogueCastle
                     return SpellEV.DRAGONFIRENEO_Damage;
                 case (SpellType.RapidDagger):
                     return SpellEV.RAPIDDAGGER_Damage;
+                case (SpellType.Pistol):
+                    return SpellEV.PISTOL_Damage;
+                case (SpellType.Shotgun):
+                    return SpellEV.SHOTGUN_Damage;
+                case (SpellType.SMG):
+                    return SpellEV.SMG_Damage;
             }
 
             return 0;
@@ -388,6 +445,12 @@ namespace RogueCastle
                     return SpellEV.DRAGONFIRE_XVal;
                 case (SpellType.DragonFireNeo):
                     return SpellEV.DRAGONFIRENEO_XVal;
+                case (SpellType.Pistol):
+                    return SpellEV.PISTOL_XVal;
+                case (SpellType.Shotgun):
+                    return SpellEV.SHOTGUN_XVal;
+                case (SpellType.SMG):
+                    return SpellEV.SMG_XVal;
             }
 
             return 0;
@@ -427,6 +490,12 @@ namespace RogueCastle
                     return SpellEV.DRAGONFIRE_YVal;
                 case (SpellType.DragonFireNeo):
                     return SpellEV.DRAGONFIRENEO_YVal;
+                case (SpellType.Pistol):
+                    return SpellEV.PISTOL_YVal;
+                case (SpellType.Shotgun):
+                    return SpellEV.SHOTGUN_YVal;
+                case (SpellType.SMG):
+                    return SpellEV.SMG_YVal;
             }
 
             return 0;

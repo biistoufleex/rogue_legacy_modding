@@ -24,7 +24,11 @@ namespace RogueCastle
         public const byte DragonFire = 13; // Special spell for the dragon.
         public const byte RapidDagger = 14;
         public const byte DragonFireNeo = 15;
-        public const byte Total = 16;
+        // Guns mod (Neon Abyss style). Must stay below Shout (20) and Laser (100).
+        public const byte Pistol = 16;
+        public const byte Shotgun = 17;
+        public const byte SMG = 18;
+        public const byte Total = 19;
 
         public const byte Laser = 100; // DONE - Needs art. // Disabled for now.
         public const byte Shout = 20; // Special spell for the barbarian.
@@ -64,6 +68,12 @@ namespace RogueCastle
                     return "LOC_ID_SPELL_TYPE_14";
                 case (RapidDagger):
                     return "LOC_ID_SPELL_TYPE_15";
+                case (Pistol):
+                    return "LOC_ID_SPELL_TYPE_PISTOL";
+                case (Shotgun):
+                    return "LOC_ID_SPELL_TYPE_SHOTGUN";
+                case (SMG):
+                    return "LOC_ID_SPELL_TYPE_SMG";
             }
             return "";
         }
@@ -103,6 +113,12 @@ namespace RogueCastle
                     return "LOC_ID_SPELL_DESC_14";
                 case (RapidDagger):
                     return "LOC_ID_SPELL_DESC_15";
+                case (Pistol):
+                    return "LOC_ID_SPELL_DESC_PISTOL";
+                case (Shotgun):
+                    return "LOC_ID_SPELL_DESC_SHOTGUN";
+                case (SMG):
+                    return "LOC_ID_SPELL_DESC_SMG";
             }
             return "";
         }
@@ -141,6 +157,13 @@ namespace RogueCastle
                 case (DragonFireNeo):
                     return "DragonFireIcon_Sprite";
                 case (RapidDagger):
+                    return "RapidDaggerIcon_Sprite";
+                // Guns reuse icons that Knight/Mage never see in normal play, so they stay recognisable.
+                case (Pistol):
+                    return "DragonFireIcon_Sprite";
+                case (Shotgun):
+                    return "TimeBombIcon_Sprite";
+                case (SMG):
                     return "RapidDaggerIcon_Sprite";
             }
             return "DaggerIcon_Sprite";
