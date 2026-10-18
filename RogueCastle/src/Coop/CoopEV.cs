@@ -9,7 +9,15 @@ namespace RogueCastle
 
         // Classes Player 2 can cycle through with SELECT in the starting camp, and the spell each one starts with.
         public static readonly byte[] P2_CLASSES = { ClassType.Knight, ClassType.Wizard, ClassType.Barbarian };
-        public static readonly byte[] P2_START_SPELLS = { SpellType.Pistol, SpellType.SMG, SpellType.Axe };
+        // Vanilla spells only: the mod's guns (Pistol/Shotgun/SMG) are not available to P2.
+        public static readonly byte[] P2_START_SPELLS = { SpellType.Dagger, SpellType.Boomerang, SpellType.Axe };
+
+        // Class powers (Y / block button) only exist on upgraded classes: Paladin (DOWN + Y: statue),
+        // Archmage (Y: cycle 3 spells), Barbarian King (Y: shout). false = P2 gets the upgraded class only if
+        // that upgrade is unlocked in the manor (like P1's heirs); true = always.
+        public const bool P2_ALWAYS_CLASS_POWERS = false;
+        // Archmage's 3 swappable spells (Y), starting with the Mage's start spell. Vanilla spells only.
+        public static readonly Vector3 P2_ARCHMAGE_SPELLS = new Vector3(SpellType.Boomerang, SpellType.Dagger, SpellType.Axe);
 
         public const float SCREEN_MARGIN = 60f;              // min distance (px) between a player's centre and the camera edge
         public const float VERTICAL_SPLIT_LIMIT = 0.8f;      // fraction of the screen height before the camera stops following P2

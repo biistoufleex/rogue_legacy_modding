@@ -239,9 +239,32 @@ namespace RogueCastle
 
         private static void ApplyClass(PlayerStats stats, int classIndex)
         {
-            stats.Class = CoopEV.P2_CLASSES[classIndex];
+            byte baseClass = CoopEV.P2_CLASSES[classIndex];
+            stats.Class = (CoopEV.P2_ALWAYS_CLASS_POWERS || ClassType.Upgraded(baseClass)) ? UpgradedClass(baseClass) : baseClass;
             stats.Spell = CoopEV.P2_START_SPELLS[classIndex];
             stats.Traits = new Vector2(TraitType.None, TraitType.None);
+            if (stats.Class == ClassType.Wizard2)
+            {
+                stats.WizardSpellList = CoopEV.P2_ARCHMAGE_SPELLS;
+                stats.Spell = (byte)CoopEV.P2_ARCHMAGE_SPELLS.X;
+            }
+        }
+
+        // Base class -> its upgraded version, which carries the class power on the block button.
+        private static byte UpgradedClass(byte baseClass)
+        {
+            switch (baseClass)
+            {
+                case ClassType.Knight: return ClassType.Knight2;
+                case ClassType.Wizard: return ClassType.Wizard2;
+                case ClassType.Barbarian: return ClassType.Barbarian2;
+                case ClassType.Assassin: return ClassType.Assassin2;
+                case ClassType.Ninja: return ClassType.Ninja2;
+                case ClassType.Banker: return ClassType.Banker2;
+                case ClassType.SpellSword: return ClassType.SpellSword2;
+                case ClassType.Lich: return ClassType.Lich2;
+            }
+            return baseClass;
         }
 
         // P2 has no save of its own: it borrows P1's gear, runes and permanent stat bonuses.
@@ -287,6 +310,7 @@ namespace RogueCastle
                 return;
 
             Partner.AttachLevel(level);
+            ApplyClass(m_stats, m_classIndex); // a class upgrade may have been bought in the manor since last life
             CopyGearFromP1(m_stats); // the new heir may wear different gear
             Partner.StopAllSpells();
             Revive(level, 1f);
