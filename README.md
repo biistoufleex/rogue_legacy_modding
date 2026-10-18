@@ -122,6 +122,18 @@ automatiquement les assemblies de référence.
 
 Le build moddé tourne **sans Steam** (`steam_api.dll` n'est pas copiée) : aucun succès Steam ne peut être débloqué.
 
+### Créer une archive distribuable (Nexus Mods…)
+
+```bash
+powershell -ExecutionPolicy Bypass -File tools\make-release.ps1 -Version 0.1.0
+```
+
+Compile en Release et produit `../release/RogueLegacy_GunsCoop_v<version>.zip` : exe et DLL du mod, FNA et fnalibs,
+traductions, sprites CC0, `install.ps1` (copie le `Content` depuis le jeu Steam du joueur), licences et crédits.
+Le script **refuse de créer l'archive** si elle contient un fichier du jeu (comparaison par hash avec
+l'installation Steam, `steam_api`, formats audio/`.xnb`). Texte et réglages de la page Nexus :
+[docs/NEXUS_PAGE.md](docs/NEXUS_PAGE.md) — **Donation Points et dons désactivés** (licence non commerciale).
+
 ---
 
 ## Sauvegardes

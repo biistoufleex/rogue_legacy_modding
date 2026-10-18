@@ -1,0 +1,24 @@
+Third-party components shipped with this mod
+============================================
+
+Rogue Legacy 1 source code (modified)
+  (c) Cellar Door Games 2013-2024 - Rogue Legacy Source Code License v1.0 (LICENSE.md)
+  https://github.com/flibitijibibo/RogueLegacy1
+  This is an altered version and is plainly marked as such.
+
+FNA (FNA.dll)
+  Copyright 2009-2024 Ethan Lee and the MonoGame Team - Microsoft Public License (Ms-PL)
+  https://github.com/FNA-XNA/FNA - full license texts in licenses/
+
+fnalibs (SDL3.dll, FNA3D.dll, FAudio.dll, libtheorafile.dll) - https://github.com/FNA-XNA/fnalibs-dailies
+  SDL3          - zlib license        - https://github.com/libsdl-org/SDL
+  FNA3D         - zlib license        - https://github.com/FNA-XNA/FNA3D
+  FAudio        - zlib license        - https://github.com/FNA-XNA/FAudio
+  Theorafile    - zlib/BSD (libogg, libvorbis, libtheora) - https://github.com/FNA-XNA/Theorafile
+
+Mod sprites (Content/Mods/gunsSpritesheet.png) - CC0 / public domain
+  "Guns" by SnoopethDuckDuck - https://snoopethduckduck.itch.io/guns
+  "Bullet Collection 1 (M484)" by Master484 - https://opengameart.org/content/bullet-collection-1-m484
+
+NOT included: any Rogue Legacy game asset (graphics, music, sounds, Content folder) and
+steam_api.dll. Players copy the Content folder from their own copy of the game (install.ps1).
