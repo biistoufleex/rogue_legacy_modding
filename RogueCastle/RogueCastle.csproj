@@ -10,6 +10,15 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
+  <!-- Mod variants (one code base, two distributable mods):
+       ModVariant=All (default, development), Weapons (guns only) or Coop (local co-op only).
+       e.g. dotnet build -c Release -p:ModVariant=Coop -->
+  <PropertyGroup>
+    <ModVariant Condition="'$(ModVariant)' == ''">All</ModVariant>
+    <DefineConstants Condition="'$(ModVariant)' == 'All' Or '$(ModVariant)' == 'Weapons'">$(DefineConstants);MOD_WEAPONS</DefineConstants>
+    <DefineConstants Condition="'$(ModVariant)' == 'All' Or '$(ModVariant)' == 'Coop'">$(DefineConstants);MOD_COOP</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- Guns mod: custom sprites copied to <output>/Content/Mods -->
     <!-- "Update" (not Include): the SDK already globs these files as None items -->

@@ -1,4 +1,4 @@
-# Rogue Legacy - Guns & Co-op (unofficial mod) - player install script.
+# Rogue Legacy (unofficial mod) - player install script.
 # Copies the game's Content folder from YOUR Steam copy of Rogue Legacy next to this mod.
 # The game files are never modified and are not included in the mod archive.
 #
@@ -46,7 +46,7 @@ if (Test-Path (Join-Path $target "GameSpritesheets")) {
 # 2. Separate save slot for the mod, seeded with a COPY of your vanilla saves (first install only).
 $savedGames = Join-Path ([Environment]::GetFolderPath("MyDocuments")) "SavedGames\RogueLegacy"
 $vanillaSaves = Join-Path $savedGames "RogueLegacyStorageContainer"
-$modSaves = Join-Path $savedGames "RogueLegacyGunsStorageContainer"
+$modSaves = Join-Path $savedGames "{SAVE_CONTAINER}"   # filled in by make-release.ps1 (per mod)
 if ((Test-Path $vanillaSaves) -and -not (Test-Path $modSaves)) {
     Write-Host "Copying your saves to the mod's own save slot (your Steam saves are not touched)..."
     Copy-Item $vanillaSaves $modSaves -Recurse

@@ -5,7 +5,11 @@ namespace RogueCastle
     // Local co-op tuning (see docs/COOP_PLAN.md). Everything gameplay-related lives here.
     static class CoopEV
     {
+#if MOD_COOP
         public const bool COOP_ENABLED = true;
+#else
+        public const bool COOP_ENABLED = false; // Weapons-only build: no Player 2
+#endif
 
         // Classes Player 2 can cycle through with SELECT in the starting camp, and the spell each one starts with.
         public static readonly byte[] P2_CLASSES = { ClassType.Knight, ClassType.Wizard, ClassType.Barbarian };

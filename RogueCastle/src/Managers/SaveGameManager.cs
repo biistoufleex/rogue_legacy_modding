@@ -13,7 +13,12 @@ namespace RogueCastle
     {
         // Guns mod: separate save container so modded saves (spell IDs >= 16) never reach
         // the vanilla Steam saves ("RogueLegacyStorageContainer"), which Steam Cloud syncs.
+        // Builds with guns (Weapons / All) share one slot; the co-op-only build has its own.
+#if MOD_WEAPONS
         public const string STORAGE_CONTAINER_NAME = "RogueLegacyGunsStorageContainer";
+#else
+        public const string STORAGE_CONTAINER_NAME = "RogueLegacyCoopStorageContainer";
+#endif
 
         private StorageContainer m_storageContainer;
         private string m_fileNamePlayer = "RogueLegacyPlayer.rcdat";

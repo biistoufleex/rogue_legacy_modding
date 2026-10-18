@@ -10,10 +10,14 @@
 > **n'inclut aucun fichier du jeu** (graphismes, musiques, sons). Pour y jouer, il faut **posséder le jeu**
 > (par exemple sur [Steam](https://store.steampowered.com/app/241600/Rogue_Legacy/)).
 
-Ajouts du mod :
+Ce dépôt produit **deux mods distribués séparément** (même code source, deux variantes de compilation) :
 
-1. **Trois armes à feu** façon *Neon Abyss* (Pistol, Shotgun, SMG), intégrées au système de sorts.
-2. **Coop local à 2 joueurs** « drop-in » façon arcade : une 2ᵉ manette appuie sur START pour rejoindre.
+| Mod | Contenu | Variante |
+|---|---|---|
+| **Rogue Legacy - Weapons** | **Trois armes à feu** façon *Neon Abyss* (Pistol, Shotgun, SMG), intégrées au système de sorts | `Weapons` |
+| **Rogue Legacy - Co-op** | **Coop local à 2 joueurs** « drop-in » façon arcade : une 2ᵉ manette appuie sur START pour rejoindre | `Coop` |
+
+En développement, la variante par défaut `All` contient les deux.
 
 ---
 
@@ -122,24 +126,52 @@ automatiquement les assemblies de référence.
 
 Le build moddé tourne **sans Steam** (`steam_api.dll` n'est pas copiée) : aucun succès Steam ne peut être débloqué.
 
-### Créer une archive distribuable (Nexus Mods…)
+### Variantes de compilation
 
 ```bash
-powershell -ExecutionPolicy Bypass -File tools\make-release.ps1 -Version 0.1.0
+dotnet build RogueLegacy.sln -c Release -p:ModVariant=Coop
 ```
 
-Compile en Release et produit `../release/RogueLegacy_GunsCoop_v<version>.zip` : exe et DLL du mod, FNA et fnalibs,
-traductions, sprites CC0, `install.ps1` (copie le `Content` depuis le jeu Steam du joueur), licences et crédits.
-Le script **refuse de créer l'archive** si elle contient un fichier du jeu (comparaison par hash avec
-l'installation Steam, `steam_api`, formats audio/`.xnb`). Texte et réglages de la page Nexus :
-[docs/NEXUS_PAGE.md](docs/NEXUS_PAGE.md) — **Donation Points et dons désactivés** (licence non commerciale).
+`ModVariant` = `All` (défaut), `Weapons` ou `Coop` → constantes `MOD_WEAPONS` / `MOD_COOP`. La variante `Coop`
+retire les armes (listes de sorts, F9, sprites) ; la variante `Weapons` désactive le joueur 2. Chaque mod a son
+propre emplacement de sauvegarde.
+
+### Créer les archives distribuables (Nexus Mods…)
+
+```bash
+powershell -ExecutionPolicy Bypass -File tools\make-release.ps1 -Variant Weapons -Version 1.0.0
+```
+```bash
+powershell -ExecutionPolicy Bypass -File tools\make-release.ps1 -Variant Coop -Version 1.0.0
+```
+
+Compile la variante en Release et produit `../release/RogueLegacy_<Variant>_v<version>.zip` : exe et DLL du mod,
+FNA et fnalibs, traductions, sprites CC0 (Weapons uniquement), `install.ps1` (copie le `Content` depuis le jeu
+Steam du joueur), notice, licences et crédits. Le script **refuse de créer l'archive** si elle contient un fichier
+du jeu (comparaison par hash avec l'installation Steam, `steam_api`, formats audio/`.xnb`).
+Pages Nexus prêtes à copier : [Weapons](docs/NEXUS_PAGE_WEAPONS.md), [Co-op](docs/NEXUS_PAGE_COOP.md) —
+**Donation Points et dons désactivés** (licence non commerciale).
+
+### Bannières
+
+```bash
+powershell -ExecutionPolicy Bypass -File tools\make-banner.ps1 -Source banner.png -Out banner_coop.png -Text COOP -Palette Cyan -TextWidth 0.38
+```
+```bash
+powershell -ExecutionPolicy Bypass -File tools\make-banner.ps1 -Source banner.png -Out banner_weapons.png -Text WEAPONS -SubText V1.0 -Palette Gold -TextWidth 0.46
+```
+
+Ajoute un label en pixel art (police 5×7 en gras, contour, ombre) en bas à droite d'une image. L'image source
+(visuel officiel du jeu) **n'est pas versionnée** dans ce dépôt.
 
 ---
 
 ## Sauvegardes
 
-Le mod utilise un **conteneur de sauvegarde séparé** (`RogueLegacyGunsStorageContainer`) dans
-`Documents\SavedGames\RogueLegacy\`. Au premier lancement, `run.ps1` y copie les sauvegardes du jeu d'origine.
+Chaque mod utilise un **conteneur de sauvegarde séparé** dans `Documents\SavedGames\RogueLegacy\` :
+`RogueLegacyGunsStorageContainer` (Weapons et variante de développement `All`) et
+`RogueLegacyCoopStorageContainer` (Co-op). À la première installation (`run.ps1` ou `install.ps1`), le conteneur
+reçoit une copie des sauvegardes du jeu d'origine.
 Les sauvegardes Steam (et Steam Cloud) ne sont **jamais modifiées** — une sauvegarde contenant une arme du mod
 ne peut donc pas atteindre le jeu officiel.
 
@@ -161,8 +193,8 @@ Sprites des armes : regénérer la planche avec
 
 | Branche | Contenu |
 |---|---|
-| `guns-prototype` | Les 3 armes à feu (+ sprites) |
-| `coop` | Armes + coop local 2 joueurs |
+| `coop` | Branche principale : les deux mods (variantes `Weapons` / `Coop` / `All`) |
+| `guns-prototype` | Historique : premier prototype des armes seules |
 
 ---
 

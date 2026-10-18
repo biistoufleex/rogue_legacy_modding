@@ -16,7 +16,7 @@ fnalibs (SDL3.dll, FNA3D.dll, FAudio.dll, libtheorafile.dll) - https://github.co
   FAudio        - zlib license        - https://github.com/FNA-XNA/FAudio
   Theorafile    - zlib/BSD (libogg, libvorbis, libtheora) - https://github.com/FNA-XNA/Theorafile
 
-Mod sprites (Content/Mods/gunsSpritesheet.png) - CC0 / public domain
+Mod sprites (Weapons mod only: Content/Mods/gunsSpritesheet.png) - CC0 / public domain
   "Guns" by SnoopethDuckDuck - https://snoopethduckduck.itch.io/guns
   "Bullet Collection 1 (M484)" by Master484 - https://opengameart.org/content/bullet-collection-1-m484
 

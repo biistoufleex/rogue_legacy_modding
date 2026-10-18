@@ -247,7 +247,10 @@ namespace RogueCastle
                 case (ClassType.Knight):
                 case (ClassType.Knight2):
                     return new byte[] { SpellType.Axe, SpellType.Dagger, SpellType.Boomerang, SpellType.DualBlades, SpellType.Close, SpellType.Bounce,
-                        SpellType.Pistol, SpellType.Shotgun, SpellType.SMG, }; // Guns mod
+#if MOD_WEAPONS
+                        SpellType.Pistol, SpellType.Shotgun, SpellType.SMG, // Guns mod
+#endif
+                    };
                 case (ClassType.Barbarian):
                 case (ClassType.Barbarian2):
                     return new byte[] { SpellType.Axe, SpellType.Dagger, SpellType.Boomerang, SpellType.DualBlades, SpellType.Close, };
@@ -266,7 +269,10 @@ namespace RogueCastle
                 case (ClassType.Wizard):
                 case (ClassType.Wizard2):
                     return new byte[] { SpellType.Axe, SpellType.Dagger, SpellType.TimeStop, SpellType.Boomerang, SpellType.DualBlades, SpellType.Close, SpellType.DamageShield, SpellType.Bounce,
-                        SpellType.Pistol, SpellType.Shotgun, SpellType.SMG, }; // Guns mod
+#if MOD_WEAPONS
+                        SpellType.Pistol, SpellType.Shotgun, SpellType.SMG, // Guns mod
+#endif
+                    };
                 case (ClassType.Ninja):
                 case (ClassType.Ninja2):
                     return new byte[] { SpellType.Axe, SpellType.Dagger, SpellType.Translocator, SpellType.Boomerang, SpellType.DualBlades, SpellType.Close, SpellType.Bounce, };

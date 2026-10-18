@@ -1,4 +1,4 @@
-ROGUE LEGACY - GUNS & CO-OP  (UNOFFICIAL MOD)  v{VERSION}
+ROGUE LEGACY - WEAPONS  (UNOFFICIAL MOD)  v{VERSION}
 =====================================================================
 
 !! This is an UNOFFICIAL, MODIFIED version of Rogue Legacy 1. It is not made, endorsed
@@ -8,6 +8,7 @@ ROGUE LEGACY - GUNS & CO-OP  (UNOFFICIAL MOD)  v{VERSION}
 !! It is free, non-commercial, and contains NO game files: you must own Rogue Legacy.
 
 Mod source code: https://github.com/biistoufleex/rogue_legacy_modding
+Companion mod: "Rogue Legacy - Co-op" (local 2-player co-op), separate download.
 
 
 ENGLISH
@@ -22,11 +23,12 @@ Install:
     save slot (a copy of your saves). Your Steam game and saves are never modified.
  3. Launch RogueLegacy.exe. Optional: Steam > "Add a Non-Steam Game" > RogueLegacy.exe.
 
-Features:
- - 3 guns (Pistol, Shotgun, SMG) for the Knight and the Mage. Debug: F9 cycles them.
- - Local 2-player co-op: plug a 2nd gamepad and press START. SELECT (short press, in the
-   starting camp) changes Player 2's class; hold SELECT 3 s to leave.
-   Online: use Parsec (the remote player's gamepad becomes gamepad 2).
+Features - 3 Neon Abyss-style guns, used like spells by the Knight and the Mage
+(spell swap rooms, heirs):
+ - Pistol : fast straight bullet                          (5 MP)
+ - Shotgun: 5 pellets in a fan, short range               (15 MP)
+ - SMG    : full auto while you hold the spell button     (3 MP per bullet)
+ - Debug: F9 cycles the current spell between the 3 guns.
  - Steam achievements are disabled in the mod.
 
 
@@ -42,11 +44,11 @@ Installation :
     sauvegarde propre au mod (copie de vos saves). Le jeu Steam et vos saves ne sont jamais modifies.
  3. Lancer RogueLegacy.exe. Optionnel : Steam > "Ajouter un jeu non-Steam" > RogueLegacy.exe.
 
-Contenu :
- - 3 armes a feu (Pistol, Shotgun, SMG) pour le Chevalier et le Mage. Debug : F9.
- - Coop local 2 joueurs : branchez une 2e manette et appuyez sur START. SELECT (appui court,
-   au camp de depart) change la classe du joueur 2 ; maintenir SELECT 3 s pour quitter.
-   En ligne : utilisez Parsec (la manette du joueur distant devient la manette 2).
+Contenu - 3 armes a feu facon Neon Abyss, utilisees comme des sorts par le Chevalier et le Mage :
+ - Pistol : balle rapide en ligne droite                         (5 PM)
+ - Shotgun: 5 plombs en eventail, courte portee                  (15 PM)
+ - SMG    : tir automatique tant que la touche de sort est tenue (3 PM par balle)
+ - Debug : F9 fait tourner le sort courant entre les 3 armes.
  - Les succes Steam sont desactives dans le mod.
 
 
