@@ -406,6 +406,12 @@ namespace RogueCastle
 
                 case PartnerState.Active:
                     Partner.Update(gameTime);
+                    // Same rule as P1 in StartingRoomObj.Update(): full HP and MP while in the starting camp.
+                    if (level.CurrentRoom != null && level.CurrentRoom.Name == "Start")
+                    {
+                        Partner.CurrentMana = Partner.MaxMana;
+                        Partner.CurrentHealth = Partner.MaxHealth;
+                    }
                     break;
             }
 
