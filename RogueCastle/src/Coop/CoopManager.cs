@@ -617,6 +617,11 @@ namespace RogueCastle
             m_hud.Update(Partner);
             m_hudSpellIcon.ChangeSprite(SpellType.Icon(m_stats.Spell));
             m_hudLabel.Text = "P2  " + LocaleBuilder.getResourceStringCustomFemale(ClassType.ToStringID(m_stats.Class, m_stats.IsFemale), m_stats.IsFemale);
+            // In the camp, remind P2 how to switch class.
+            bool inCamp = Partner.AttachedLevel != null && Partner.AttachedLevel.CurrentRoom != null && Partner.AttachedLevel.CurrentRoom.Name == "Start";
+            if (inCamp)
+                m_hudLabel.Text += "\n" + LocaleBuilder.getResourceString("LOC_ID_COOP_CLASS_HINT");
+            m_hudLabel.Position = CoopEV.P2_HUD_POSITION + new Vector2(0, inCamp ? -40 : -15); // keep the 2-line label above the bars
         }
 
         // Screen space, right after P1's HUD.

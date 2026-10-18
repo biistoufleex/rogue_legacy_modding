@@ -3462,6 +3462,9 @@
   <data name="LOC_ID_COOP_JOIN_AT_START" xml:space="preserve">
     <value>Player 2: join at the starting camp</value>
   </data>
+  <data name="LOC_ID_COOP_CLASS_HINT" xml:space="preserve">
+    <value>SELECT: change class</value>
+  </data>
   <data name="LOC_ID_COOP_LEFT" xml:space="preserve">
     <value>Player 2 left</value>
   </data>
