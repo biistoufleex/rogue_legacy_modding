@@ -3459,8 +3459,8 @@
   <data name="LOC_ID_COOP_JOINED" xml:space="preserve">
     <value>Player 2 joined!</value>
   </data>
-  <data name="LOC_ID_COOP_JOIN_AT_START" xml:space="preserve">
-    <value>Player 2: join at the starting camp</value>
+  <data name="LOC_ID_COOP_CANT_JOIN_NOW" xml:space="preserve">
+    <value>Player 2 can't join right now</value>
   </data>
   <data name="LOC_ID_COOP_CLASS_HINT" xml:space="preserve">
     <value>SELECT: change class</value>

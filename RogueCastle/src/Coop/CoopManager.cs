@@ -142,15 +142,19 @@ namespace RogueCastle
             if (pad == null)
                 return false;
 
+            // P2 can join anywhere (camp or castle) and appears on P1; only refused during P1's death or a cutscene,
+            // or before the tutorial is done.
             PlayerObj p1 = level.Player;
-            if (level.CurrentRoom.Name != "Start" || p1.IsKilled == true || p1.ControlsLocked == true || Game.PlayerStats.TutorialComplete == false)
+            if (p1.IsKilled == true || IsInScriptedSequence(p1) || Game.PlayerStats.TutorialComplete == false)
             {
-                level.TextManager.DisplayStringText("LOC_ID_COOP_JOIN_AT_START", Color.Cyan, new Vector2(p1.X, p1.Bounds.Top - 60));
+                level.TextManager.DisplayStringText("LOC_ID_COOP_CANT_JOIN_NOW", Color.Cyan, new Vector2(p1.X, p1.Bounds.Top - 60));
                 SoundManager.PlaySound("Error_Spell");
                 return sharedPad;
             }
 
             Join(level, pad.Value, sharedPad);
+            if (IsParkingRoom(level.CurrentRoom)) // joined inside a one-player room: wait hidden until P1 leaves it
+                Park(level);
             return true;
         }
 

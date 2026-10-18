@@ -5772,8 +5772,8 @@
   <data name="LOC_ID_COOP_JOINED" xml:space="preserve">
     <value>Le joueur 2 rejoint la partie !</value>
   </data>
-  <data name="LOC_ID_COOP_JOIN_AT_START" xml:space="preserve">
-    <value>Joueur 2 : rejoindre au camp de départ</value>
+  <data name="LOC_ID_COOP_CANT_JOIN_NOW" xml:space="preserve">
+    <value>Le joueur 2 ne peut pas rejoindre maintenant</value>
   </data>
   <data name="LOC_ID_COOP_CLASS_HINT" xml:space="preserve">
     <value>SELECT : changer de classe</value>
