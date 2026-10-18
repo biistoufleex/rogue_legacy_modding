@@ -50,10 +50,23 @@ Want guns? See the companion mod [b]Rogue Legacy - Weapons[/b].
 [size=3][b]Installation[/b][/size]
 [list=1]
 [*]Extract the archive anywhere ([b]not[/b] inside your Steam game folder).
-[*]Right-click [b]install.ps1[/b] > [i]Run with PowerShell[/i] (copies the game's Content folder from your Steam copy, creates the mod's save slot).
+[*]Double-click [b]install.bat[/b] (copies the game's Content folder from your Steam copy, creates the mod's save slot).
 [*]Launch [b]RogueLegacy.exe[/b]. Optional: Steam > [i]Add a Non-Steam Game[/i].
 [/list]
 Windows 64-bit only. Steam achievements are disabled in the mod.
+If Windows shows [i]"Windows protected your PC"[/i] (the exe is not signed): [b]More info > Run anyway[/b].
+
+[size=3][b]Known issues[/b][/size]
+[list]
+[*]Windows only (no Linux / Steam Deck build yet).
+[*]Added to Steam as a non-Steam game and a gamepad is not detected? Disable [b]Steam Input[/b] for that shortcut (Properties > Controller).
+[*]Only Player 1 navigates the pause menu and the other menus.
+[*]Chests, teleporters, boss doors, map, NPCs and gold are handled by Player 1; Player 2 changes class only in the starting camp.
+[*]An idle Player 2 on a screen edge blocks Player 1 (arcade rule): Player 2 can leave with SELECT (3 s).
+[/list]
+
+[size=3][b]Changelog[/b][/size]
+[b]1.0.0[/b] — first release. Full history in CHANGELOG.txt (inside the archive).
 
 [size=3][b]Credits[/b][/size]
 [list]

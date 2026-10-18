@@ -41,6 +41,8 @@ if ($Variant -eq "Weapons") {                                        # gun sprit
 Copy-Item (Join-Path $root "fnalibs\x64\*.dll") $stage
 
 Copy-Item (Join-Path $repo "LICENSE.md"), (Join-Path $repo "EXCEPTIONS.md"), (Join-Path $repo "tools\release\THIRD_PARTY.txt") $stage
+Copy-Item (Join-Path $repo "tools\release\install.bat") $stage                 # double-click entry point (bypasses the script policy once)
+Copy-Item (Join-Path $repo "CHANGELOG.md") (Join-Path $stage "CHANGELOG.txt")
 (Get-Content (Join-Path $repo "tools\release\install.ps1") -Raw).Replace("{SAVE_CONTAINER}", $saveContainer) |
     Set-Content (Join-Path $stage "install.ps1") -Encoding UTF8
 (Get-Content (Join-Path $repo "tools\release\README_$($Variant.ToUpper()).txt") -Raw).Replace("{VERSION}", $Version) |

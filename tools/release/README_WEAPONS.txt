@@ -18,10 +18,13 @@ Requirements: Windows 64-bit, Rogue Legacy installed (Steam), .NET Framework 4.x
 
 Install:
  1. Extract this archive anywhere (NOT inside your Steam game folder).
- 2. Right-click install.ps1 > "Run with PowerShell".
+ 2. Double-click install.bat (or right-click install.ps1 > "Run with PowerShell").
     It copies the game's "Content" folder from your Steam copy and gives the mod its own
     save slot (a copy of your saves). Your Steam game and saves are never modified.
  3. Launch RogueLegacy.exe. Optional: Steam > "Add a Non-Steam Game" > RogueLegacy.exe.
+    If Windows shows "Windows protected your PC" (unsigned exe): More info > Run anyway.
+
+Known issues and version history: see CHANGELOG.txt.
 
 Features - 3 Neon Abyss-style guns, used like spells by the Knight and the Mage
 (spell swap rooms, heirs):
@@ -39,10 +42,13 @@ Prerequis : Windows 64 bits, Rogue Legacy installe (Steam), .NET Framework 4.x
 
 Installation :
  1. Extraire l'archive n'importe ou (PAS dans le dossier du jeu Steam).
- 2. Clic droit sur install.ps1 > "Executer avec PowerShell".
+ 2. Double-cliquer sur install.bat (ou clic droit sur install.ps1 > "Executer avec PowerShell").
     Le script copie le dossier "Content" depuis votre jeu Steam et cree un emplacement de
     sauvegarde propre au mod (copie de vos saves). Le jeu Steam et vos saves ne sont jamais modifies.
  3. Lancer RogueLegacy.exe. Optionnel : Steam > "Ajouter un jeu non-Steam" > RogueLegacy.exe.
+    Si Windows affiche "Windows a protege votre ordinateur" (exe non signe) : Informations complementaires > Executer quand meme.
+
+Problemes connus et historique des versions : voir CHANGELOG.txt.
 
 Contenu - 3 armes a feu facon Neon Abyss, utilisees comme des sorts par le Chevalier et le Mage :
  - Pistol : balle rapide en ligne droite                         (5 PM)

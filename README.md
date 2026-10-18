@@ -158,7 +158,9 @@ FNA et fnalibs, traductions, sprites CC0 (Weapons uniquement), `install.ps1` (co
 Steam du joueur), notice, licences et crédits. Le script **refuse de créer l'archive** si elle contient un fichier
 du jeu (comparaison par hash avec l'installation Steam, `steam_api`, formats audio/`.xnb`).
 Pages Nexus prêtes à copier : [Weapons](docs/NEXUS_PAGE_WEAPONS.md), [Co-op](docs/NEXUS_PAGE_COOP.md) —
-**Donation Points et dons désactivés** (licence non commerciale).
+**Donation Points et dons désactivés** (licence non commerciale). Étapes de publication :
+[docs/PUBLICATION_CHECKLIST.md](docs/PUBLICATION_CHECKLIST.md). Historique et problèmes connus :
+[CHANGELOG.md](CHANGELOG.md). Les joueurs installent avec `install.bat` (double-clic).
 
 ### Bannières
 

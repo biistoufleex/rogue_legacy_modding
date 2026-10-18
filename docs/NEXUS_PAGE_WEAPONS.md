@@ -46,10 +46,21 @@ Want to play with a friend? See the companion mod [b]Rogue Legacy - Co-op[/b].
 [size=3][b]Installation[/b][/size]
 [list=1]
 [*]Extract the archive anywhere ([b]not[/b] inside your Steam game folder).
-[*]Right-click [b]install.ps1[/b] > [i]Run with PowerShell[/i] (copies the game's Content folder from your Steam copy, creates the mod's save slot).
+[*]Double-click [b]install.bat[/b] (copies the game's Content folder from your Steam copy, creates the mod's save slot).
 [*]Launch [b]RogueLegacy.exe[/b]. Optional: Steam > [i]Add a Non-Steam Game[/i].
 [/list]
 Windows 64-bit only. Steam achievements are disabled in the mod.
+If Windows shows [i]"Windows protected your PC"[/i] (the exe is not signed): [b]More info > Run anyway[/b].
+
+[size=3][b]Known issues[/b][/size]
+[list]
+[*]Windows only (no Linux / Steam Deck build yet).
+[*]Added to Steam as a non-Steam game and a gamepad is not detected? Disable [b]Steam Input[/b] for that shortcut (Properties > Controller).
+[*]Guns are only offered to the Knight and the Mage (and their upgraded classes).
+[/list]
+
+[size=3][b]Changelog[/b][/size]
+[b]1.0.0[/b] — first release. Full history in CHANGELOG.txt (inside the archive).
 
 [size=3][b]Credits[/b][/size]
 [list]
@@ -62,5 +73,5 @@ Source code: [url=https://github.com/biistoufleex/rogue_legacy_modding]github.co
 Non-commercial: free, no ads, no donations, altered version clearly marked, no game assets distributed (LICENSE.md included).
 
 ---
-[b]FR —[/b] Mod non officiel : 3 armes à feu (Pistol, Shotgun, SMG automatique) pour le Chevalier et le Mage. Basé sur le code source officiel de Cellar Door Games, gratuit, aucun fichier du jeu inclus (il faut posséder Rogue Legacy). Installation : extraire, clic droit sur install.ps1 > Exécuter avec PowerShell, lancer RogueLegacy.exe.
+[b]FR —[/b] Mod non officiel : 3 armes à feu (Pistol, Shotgun, SMG automatique) pour le Chevalier et le Mage. Basé sur le code source officiel de Cellar Door Games, gratuit, aucun fichier du jeu inclus (il faut posséder Rogue Legacy). Installation : extraire, double-cliquer sur install.bat, lancer RogueLegacy.exe.
 ```
