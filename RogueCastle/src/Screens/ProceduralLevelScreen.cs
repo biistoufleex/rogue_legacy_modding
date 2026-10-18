@@ -1440,7 +1440,8 @@ namespace RogueCastle
                             }
 
                             if (DisableRoomOnEnter == false)
-                                m_currentRoom.OnEnter(); 
+                                m_currentRoom.OnEnter();
+                            CoopManager.AfterRoomOnEnter(this); // Coop: rooms may move P1 in OnEnter (castle entrance), re-place P2
                             break;
                         }
                     }

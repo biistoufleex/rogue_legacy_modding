@@ -307,6 +307,15 @@ namespace RogueCastle
             }
         }
 
+        // ProceduralLevelScreen.CheckForRoomTransition, right after the room's OnEnter(): some rooms reposition P1 there
+        // (e.g. the castle entrance moves P1 past the gate), so P2 is placed on P1 again.
+        public static void AfterRoomOnEnter(ProceduralLevelScreen level)
+        {
+            if (IsJoined == false || Partner.AttachedLevel != level || m_state != PartnerState.Active)
+                return;
+            PlaceNextToP1(level);
+        }
+
         // Rooms scripted for a single player: P2 is hidden and invulnerable there.
         private static bool IsParkingRoom(RoomObj room)
         {
@@ -405,7 +414,12 @@ namespace RogueCastle
                     break;
 
                 case PartnerState.Active:
-                    Partner.Update(gameTime);
+                    // While P1 is in a scripted sequence (auto-walk through the castle gate, boss intro, teleport...),
+                    // P2 sticks to P1 so scripted movement can't leave it behind a closing gate or in another room.
+                    if (p1.ControlsLocked)
+                        PlaceNextToP1(level);
+                    else
+                        Partner.Update(gameTime);
                     // Same rule as P1 in StartingRoomObj.Update(): full HP and MP while in the starting camp.
                     if (level.CurrentRoom != null && level.CurrentRoom.Name == "Start")
                     {
