@@ -83,6 +83,7 @@ namespace RogueCastle
 
         protected PlayerObj m_target;
         public PlayerObj PlayerTarget { get { return m_target; } } // Coop: read by LogicAction.TargetResolver
+        private PlayerObj m_lastAttacker; // Coop: player who landed the last hit (melee or own projectile), gets the kill rewards
         public GameTypes.EnemyDifficulty Difficulty { get; internal set; }
         protected string m_resetSpriteName; // The name of the sprite when its Reset() method is called.
 
@@ -707,7 +708,10 @@ namespace RogueCastle
                         PlayerObj attacker = hittingPlayer ?? (projectile != null ? projectile.Source as PlayerObj : null);
                         PlayerObj previousTarget = m_target;
                         if (attacker != null)
+                        {
                             m_target = attacker;
+                            m_lastAttacker = attacker;
+                        }
                         HitEnemy(damage, impactPosition, isPlayer);
                         if (attacker != null && m_target == attacker)
                             m_target = previousTarget;
@@ -827,7 +831,8 @@ namespace RogueCastle
                 Blink(Color.Red, 0.1f);
                 this.m_levelScreen.ImpactEffectPool.DisplayEnemyImpactEffect(collisionPt);
 
-                if (isPlayer == true && (Game.PlayerStats.Class == ClassType.SpellSword || Game.PlayerStats.Class == ClassType.SpellSword2))
+                // Coop: m_target is the attacker here (see CollisionResponse), so use its own class/traits.
+                if (isPlayer == true && (m_target.Stats.Class == ClassType.SpellSword || m_target.Stats.Class == ClassType.SpellSword2))
                 {
                     this.CurrentHealth -= damage;
                     m_target.CurrentMana += (int)(damage * GameEV.SPELLSWORD_ATTACK_MANA_CONVERSION);
@@ -852,13 +857,13 @@ namespace RogueCastle
                     }
                 }
 
-                if (CanBeKnockedBack == true && IsPaused == false && (Game.PlayerStats.Traits.X != TraitType.Hypogonadism && Game.PlayerStats.Traits.Y != TraitType.Hypogonadism))
+                if (CanBeKnockedBack == true && IsPaused == false && (m_target.Stats.Traits.X != TraitType.Hypogonadism && m_target.Stats.Traits.Y != TraitType.Hypogonadism))
                 {
                     //Knock the enemy to the left if he's to the left of the player.
                     this.CurrentSpeed = 0;
 
                     float knockbackMod = 1;
-                    if (Game.PlayerStats.Traits.X == TraitType.Hypergonadism || Game.PlayerStats.Traits.Y == TraitType.Hypergonadism)
+                    if (m_target.Stats.Traits.X == TraitType.Hypergonadism || m_target.Stats.Traits.Y == TraitType.Hypergonadism)
                         knockbackMod = GameEV.TRAIT_HYPERGONADISM;
 
                     if (this.KnockBack == Vector2.Zero)
@@ -891,19 +896,23 @@ namespace RogueCastle
 
         public override void Kill(bool giveXP = true)
         {
+            // Coop: kill rewards (vampirism, mana gain, lich health) go to the player who landed the last hit,
+            // not to whoever the enemy currently targets (Kill() runs later, from the enemy's own Update).
+            PlayerObj rewardPlayer = (m_lastAttacker != null && m_lastAttacker.IsKilled == false) ? m_lastAttacker : m_target;
+
             // Get health back for killing enemy.
-            int vampirism = m_target.TotalVampBonus;
+            int vampirism = rewardPlayer.TotalVampBonus;
             if (vampirism > 0)
             {
-                m_target.CurrentHealth += vampirism;
-                this.m_levelScreen.TextManager.DisplayNumberStringText(vampirism, "LOC_ID_SKILL_SCREEN_14" /*"hp"*/, Color.LightGreen, new Vector2(m_target.X, m_target.Bounds.Top - 60));
+                rewardPlayer.CurrentHealth += vampirism;
+                this.m_levelScreen.TextManager.DisplayNumberStringText(vampirism, "LOC_ID_SKILL_SCREEN_14" /*"hp"*/, Color.LightGreen, new Vector2(rewardPlayer.X, rewardPlayer.Bounds.Top - 60));
             }
 
             // Get mana back for killing enemy.
-            if (m_target.ManaGain > 0)
+            if (rewardPlayer.ManaGain > 0)
             {
-                m_target.CurrentMana += m_target.ManaGain;
-                m_levelScreen.TextManager.DisplayNumberStringText((int)m_target.ManaGain, "LOC_ID_SKILL_SCREEN_15" /*"mp"*/, Color.RoyalBlue, new Vector2(m_target.X, m_target.Bounds.Top - 90));
+                rewardPlayer.CurrentMana += rewardPlayer.ManaGain;
+                m_levelScreen.TextManager.DisplayNumberStringText((int)rewardPlayer.ManaGain, "LOC_ID_SKILL_SCREEN_15" /*"mp"*/, Color.RoyalBlue, new Vector2(rewardPlayer.X, rewardPlayer.Bounds.Top - 90));
             }
 
             if (Game.PlayerStats.SpecialItem == SpecialItemType.GoldPerKill)
@@ -964,7 +973,7 @@ namespace RogueCastle
                 m_currentActiveLB.StopLogicBlock();
             m_levelScreen.ImpactEffectPool.DisplayDeathEffect(this.Position);
 
-            if ((Game.PlayerStats.Class == ClassType.Lich || Game.PlayerStats.Class == ClassType.Lich2) && this.GivesLichHealth == true)
+            if ((rewardPlayer.Stats.Class == ClassType.Lich || rewardPlayer.Stats.Class == ClassType.Lich2) && this.GivesLichHealth == true)
             {
                 int lichHealthGain = 0;
                 int playerLevel = Game.PlayerStats.CurrentLevel;
@@ -975,17 +984,17 @@ namespace RogueCastle
                 else if (playerLevel >= enemyLevel)
                     lichHealthGain = GameEV.LICH_HEALTH_GAIN_PER_KILL_LESSER;
 
-                int maxPlayerHealth = (int)Math.Round(((m_target.BaseHealth + m_target.GetEquipmentHealth() +
-                        (Game.PlayerStats.BonusHealth * GameEV.ITEM_STAT_MAXHP_AMOUNT) +
+                int maxPlayerHealth = (int)Math.Round(((rewardPlayer.BaseHealth + rewardPlayer.GetEquipmentHealth() +
+                        (rewardPlayer.Stats.BonusHealth * GameEV.ITEM_STAT_MAXHP_AMOUNT) +
                         SkillSystem.GetSkill(SkillType.Health_Up).ModifierAmount +
                         SkillSystem.GetSkill(SkillType.Health_Up_Final).ModifierAmount)) * GameEV.LICH_MAX_HP_OFF_BASE, MidpointRounding.AwayFromZero);
 
                 // Only give health if the lich hasn't reach max health allowed.
-                if (m_target.MaxHealth + lichHealthGain < maxPlayerHealth)
+                if (rewardPlayer.MaxHealth + lichHealthGain < maxPlayerHealth)
                 {
-                    Game.PlayerStats.LichHealth += lichHealthGain;
-                    m_target.CurrentHealth += lichHealthGain;
-                    m_levelScreen.TextManager.DisplayNumberStringText(lichHealthGain, "LOC_ID_PLAYER_OBJ_3" /*"max hp"*/, Color.LightGreen, new Vector2(m_target.X, m_target.Bounds.Top - 30));
+                    rewardPlayer.Stats.LichHealth += lichHealthGain;
+                    rewardPlayer.CurrentHealth += lichHealthGain;
+                    m_levelScreen.TextManager.DisplayNumberStringText(lichHealthGain, "LOC_ID_PLAYER_OBJ_3" /*"max hp"*/, Color.LightGreen, new Vector2(rewardPlayer.X, rewardPlayer.Bounds.Top - 30));
                 }
                 
                 //Game.PlayerStats.LichHealth += GameEV.LICH_HEALTH_GAIN_PER_KILL;
@@ -1102,6 +1111,7 @@ namespace RogueCastle
 
         public override void Reset()
         {
+            m_lastAttacker = null;
             if (m_currentActiveLB.IsActive == true)
                 m_currentActiveLB.StopLogicBlock();
 

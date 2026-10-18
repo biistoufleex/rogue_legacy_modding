@@ -49,6 +49,12 @@ namespace RogueCastle
             return storedTarget;
         }
 
+        // P1 locks its own controls while dashing; that is not a cutscene and must not freeze or drag P2.
+        private static bool IsInScriptedSequence(PlayerObj p1)
+        {
+            return p1.ControlsLocked && p1.State != PlayerObj.STATE_DASHING;
+        }
+
         /// <summary>P2 is in the level, alive and controllable.</summary>
         public static bool PartnerActive
         {
@@ -104,7 +110,7 @@ namespace RogueCastle
             }
 
             // P2 is frozen whenever P1 is (cutscenes, boss intros, menus).
-            if (PartnerActive && level.Player.ControlsLocked == false && level.Player.IsKilled == false)
+            if (PartnerActive && IsInScriptedSequence(level.Player) == false && level.Player.IsKilled == false)
                 Partner.HandleInput();
 
             return consumed;
@@ -416,7 +422,7 @@ namespace RogueCastle
                 case PartnerState.Active:
                     // While P1 is in a scripted sequence (auto-walk through the castle gate, boss intro, teleport...),
                     // P2 sticks to P1 so scripted movement can't leave it behind a closing gate or in another room.
-                    if (p1.ControlsLocked)
+                    if (IsInScriptedSequence(p1))
                         PlaceNextToP1(level);
                     else
                         Partner.Update(gameTime);

@@ -40,14 +40,14 @@ namespace RogueCastle
             if (player != null && otherBox.Type == Consts.WEAPON_HITBOX && HitBySpellsOnly == false)
             {
                 if (Broken == false)
-                    Break();
+                    Break(player); // Coop: the breaker gets the OCD mana
             }
 
             ProjectileObj projectile = otherBox.AbsParent as ProjectileObj;
             if (projectile != null && (projectile.CollisionTypeTag == GameTypes.CollisionType_PLAYER || projectile.CollisionTypeTag == GameTypes.CollisionType_GLOBAL_DAMAGE_WALL) && otherBox.Type == Consts.WEAPON_HITBOX)
             {
                 if (Broken == false)
-                    Break();
+                    Break(projectile.Source as PlayerObj);
 
                 if (projectile.DestroysWithTerrain == true && this.SpriteName == "Target1_Character")
                     projectile.RunDestroyAnimation(false);
@@ -58,9 +58,9 @@ namespace RogueCastle
                 base.CollisionResponse(thisBox, otherBox, collisionResponseType);
         }
 
-        public void Break()
+        public void Break(PlayerObj breaker = null)
         {
-            PlayerObj player = Game.ScreenManager.Player;
+            PlayerObj player = breaker ?? Game.ScreenManager.Player;
 
             foreach (GameObj obj in _objectList)
                 obj.Visible = true;
@@ -97,7 +97,7 @@ namespace RogueCastle
                     SoundManager.Play3DSound(this, Game.ScreenManager.Player, "EnemyHit1", "EnemyHit2", "EnemyHit3", "EnemyHit4", "EnemyHit5", "EnemyHit6");
                     SoundManager.Play3DSound(this, Game.ScreenManager.Player, "Break1", "Break2", "Break3");
 
-                    if (Game.PlayerStats.Traits.X == TraitType.OCD || Game.PlayerStats.Traits.Y == TraitType.OCD)
+                    if (player.Stats.Traits.X == TraitType.OCD || player.Stats.Traits.Y == TraitType.OCD) // Coop: breaker's own trait
                     {
                         player.CurrentMana += 1;
                         player.AttachedLevel.TextManager.DisplayNumberStringText(1, "LOC_ID_SKILL_SCREEN_15" /*"mp"*/, Color.RoyalBlue, new Vector2(player.X, player.Bounds.Top - 30));
@@ -148,7 +148,7 @@ namespace RogueCastle
             SoundManager.Play3DSound(this, Game.ScreenManager.Player,"EnemyHit1", "EnemyHit2", "EnemyHit3", "EnemyHit4", "EnemyHit5", "EnemyHit6");
             SoundManager.Play3DSound(this, Game.ScreenManager.Player,"Break1", "Break2", "Break3");
 
-            if (Game.PlayerStats.Traits.X == TraitType.OCD || Game.PlayerStats.Traits.Y == TraitType.OCD)
+            if (player.Stats.Traits.X == TraitType.OCD || player.Stats.Traits.Y == TraitType.OCD) // Coop: breaker's own trait
             {
                 player.CurrentMana += 1;
                 player.AttachedLevel.TextManager.DisplayNumberStringText(1, "LOC_ID_SKILL_SCREEN_15" /*"mp"*/, Color.RoyalBlue, new Vector2(player.X, player.Bounds.Top - 30));
