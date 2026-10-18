@@ -19,10 +19,11 @@ namespace RogueCastle
         // Archmage's 3 swappable spells (Y), starting with the Mage's start spell. Vanilla spells only.
         public static readonly Vector3 P2_ARCHMAGE_SPELLS = new Vector3(SpellType.Boomerang, SpellType.Dagger, SpellType.Axe);
 
-        public const float SCREEN_MARGIN = 60f;              // min distance (px) between a player's centre and the camera edge
-        public const float VERTICAL_SPLIT_LIMIT = 0.8f;      // fraction of the screen height before the camera stops following P2
-        public const float OFFSCREEN_TELEPORT_DELAY = 1f;    // seconds P2 may stay off-camera before being teleported to P1
-        public const float PINNED_TELEPORT_DELAY = 2f;       // seconds both players may push opposite screen edges before P2 is pulled to P1
+        // Invisible screen walls (left, right, top). Distances from a player's centre to the camera edge.
+        public const float SCREEN_MARGIN = 60f;
+        public const float SCREEN_MARGIN_TOP = 100f;         // larger: keeps the head on screen
+        // No bottom wall: a player who falls off-screen (only way to leave it) comes back next to P1 after this delay.
+        public const float OFFSCREEN_TELEPORT_DELAY = 2f;
         public const float REVIVE_DELAY = 8f;                // seconds P2 stays knocked out
         public const float REVIVE_HP = 0.5f;                 // fraction of max HP when P2 comes back
         public const float GHOST_OPACITY = 0.35f;            // P2 opacity while knocked out

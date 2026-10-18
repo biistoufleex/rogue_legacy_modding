@@ -24,7 +24,6 @@ namespace RogueCastle
         private static PartnerState m_state;
         private static float m_downTimer;
         private static float m_offscreenTimer;
-        private static float m_pinnedTimer;
         private static float m_selectPressStart = -1; // Game.TotalGameTime when SELECT went down, -1 = released
         private static float m_retargetTimer;
 
@@ -509,8 +508,8 @@ namespace RogueCastle
 
         #region Camera (Metal Slug style)
 
-        // Point the camera should centre on: midpoint of both players, or P1 only when P2 is out of play
-        // or too far vertically (P1 must always stay on screen: room transitions are driven by P1).
+        // Point the camera centres on: always the midpoint of both players (no snapping to P1), only nudged so that P1
+        // stays on screen in the rare case nothing could stop them separating (a fall). Room transitions are driven by P1.
         public static Vector2 GetCameraFocus(ProceduralLevelScreen level)
         {
             PlayerObj p1 = level.Player;
@@ -518,14 +517,19 @@ namespace RogueCastle
                 return p1.Position;
 
             Camera2D camera = level.ScreenManager.Camera;
-            if (Math.Abs(Partner.Y - p1.Y) > camera.Height * CoopEV.VERTICAL_SPLIT_LIMIT)
-                return p1.Position;
-
-            return (p1.Position + Partner.Position) / 2f;
+            Vector2 focus = (p1.Position + Partner.Position) / 2f;
+            float halfW = camera.Width / 2f - CoopEV.SCREEN_MARGIN;
+            float halfH = camera.Height / 2f - CoopEV.SCREEN_MARGIN_TOP;
+            focus.X = MathHelper.Clamp(focus.X, p1.X - halfW - GlobalEV.Camera_XOffset, p1.X + halfW - GlobalEV.Camera_XOffset);
+            focus.Y = MathHelper.Clamp(focus.Y, p1.Y - halfH - GlobalEV.Camera_YOffset, p1.Y + halfH - GlobalEV.Camera_YOffset);
+            return focus;
         }
 
-        // Called at the end of UpdateCamera(): keeps both players inside the camera horizontally, except on a side where
-        // the camera already touches the room edge (so doors still work). P2 lost off-screen is teleported to P1.
+        // Called at the end of UpdateCamera(). Arcade-style invisible walls: the left, right and top screen edges block
+        // BOTH players, so the one in front simply can't go further while the other lags behind (no teleport).
+        // A side where the camera already touches the room edge is left open so doors still work.
+        // There is no bottom wall (it would make a player stand in mid-air): a player who falls off-screen is
+        // brought back next to P1 after OFFSCREEN_TELEPORT_DELAY.
         public static void ConstrainToCamera(ProceduralLevelScreen level, float elapsed)
         {
             if (PartnerActive == false || Partner.AttachedLevel != level || level.CurrentRoom == null || level.Player.IsKilled)
@@ -536,24 +540,10 @@ namespace RogueCastle
             Rectangle room = level.CurrentRoom.Bounds;
             float minX = cam.Left > room.Left ? cam.Left + CoopEV.SCREEN_MARGIN : float.MinValue;
             float maxX = cam.Right < room.Right ? cam.Right - CoopEV.SCREEN_MARGIN : float.MaxValue;
+            float minY = cam.Top > room.Top ? cam.Top + CoopEV.SCREEN_MARGIN_TOP : float.MinValue;
 
-            bool p1Pinned = ClampX(level.Player, minX, maxX);
-            bool p2Pinned = ClampX(Partner, minX, maxX) || Partner.X <= minX + 4 || Partner.X >= maxX - 4; // resting on an edge counts
-
-            // Anti soft-lock: an idle P2 pinned to one edge while P1 pushes the other one gets pulled to P1.
-            if (p1Pinned && p2Pinned)
-            {
-                m_pinnedTimer += elapsed;
-                if (m_pinnedTimer >= CoopEV.PINNED_TELEPORT_DELAY)
-                {
-                    m_pinnedTimer = 0;
-                    PlaceNextToP1(level);
-                    SoundManager.PlaySound("mfqt_teleport_in");
-                    level.ImpactEffectPool.SpellCastEffect(Partner.Position, 0, false);
-                }
-            }
-            else
-                m_pinnedTimer = 0;
+            ClampToWalls(level.Player, minX, maxX, minY);
+            ClampToWalls(Partner, minX, maxX, minY);
 
             Rectangle visible = cam;
             visible.Inflate(40, 40);
@@ -572,22 +562,25 @@ namespace RogueCastle
             }
         }
 
-        // Returns true if the player had to be pushed back inside the screen.
-        private static bool ClampX(PlayerObj player, float minX, float maxX)
+        // Invisible walls: push the player back inside and cancel the velocity going through the wall.
+        private static void ClampToWalls(PlayerObj player, float minX, float maxX, float minY)
         {
             if (player.X < minX)
             {
                 player.X = minX;
                 if (player.AccelerationX < 0) player.AccelerationX = 0;
-                return true;
             }
-            if (player.X > maxX)
+            else if (player.X > maxX)
             {
                 player.X = maxX;
                 if (player.AccelerationX > 0) player.AccelerationX = 0;
-                return true;
             }
-            return false;
+
+            if (player.Y < minY) // ceiling: a jump/flight can't take a player above the screen
+            {
+                player.Y = minY;
+                if (player.AccelerationY < 0) player.AccelerationY = 0;
+            }
         }
 
         #endregion
