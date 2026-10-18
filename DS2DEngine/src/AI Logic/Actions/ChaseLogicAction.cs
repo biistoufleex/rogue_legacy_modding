@@ -46,7 +46,8 @@ namespace DS2DEngine
 
                 this.ParentLogicSet.ParentGameObj.CurrentSpeed = m_speed;
 
-                if (m_target != null)
+                GameObj target = ResolveTarget(m_target); // coop: follow the owner's current target
+                if (target != null)
                 {
                     m_durationCounter = m_duration;
 
@@ -55,9 +56,9 @@ namespace DS2DEngine
                     Vector2 seekPosition;
 
                     if (m_moveTowards == true)
-                        seekPosition = m_target.Position + m_storedRelativePos;
+                        seekPosition = target.Position + m_storedRelativePos;
                     else
-                        seekPosition = 1000 * this.ParentLogicSet.ParentGameObj.Position - m_target.Position;
+                        seekPosition = 1000 * this.ParentLogicSet.ParentGameObj.Position - target.Position;
 
                     TurnToFace(seekPosition, this.ParentLogicSet.ParentGameObj.TurnSpeed, 1/60f);
 
@@ -66,7 +67,7 @@ namespace DS2DEngine
 
                     if (ParentLogicSet.ParentGameObj.LockFlip == false)
                     {
-                        if (ParentLogicSet.ParentGameObj.X > m_target.X)
+                        if (ParentLogicSet.ParentGameObj.X > target.X)
                             ParentLogicSet.ParentGameObj.Flip = Microsoft.Xna.Framework.Graphics.SpriteEffects.FlipHorizontally;
                         else
                             ParentLogicSet.ParentGameObj.Flip = Microsoft.Xna.Framework.Graphics.SpriteEffects.None;
@@ -80,13 +81,14 @@ namespace DS2DEngine
         {
             float elapsedSeconds = (float)gameTime.ElapsedGameTime.TotalSeconds;
             m_durationCounter -= elapsedSeconds;
-            if (m_target != null && m_durationCounter > 0)
+            GameObj target = ResolveTarget(m_target); // coop: follow the owner's current target
+            if (target != null && m_durationCounter > 0)
             {
                 Vector2 seekPosition;
                 if (m_moveTowards == true)
-                    seekPosition = m_target.Position + m_storedRelativePos;
+                    seekPosition = target.Position + m_storedRelativePos;
                 else
-                    seekPosition = 2 * this.ParentLogicSet.ParentGameObj.Position - m_target.Position;
+                    seekPosition = 2 * this.ParentLogicSet.ParentGameObj.Position - target.Position;
 
                 TurnToFace(seekPosition, this.ParentLogicSet.ParentGameObj.TurnSpeed, elapsedSeconds);
 
@@ -95,7 +97,7 @@ namespace DS2DEngine
 
                 if (ParentLogicSet.ParentGameObj.LockFlip == false)
                 {
-                    if (ParentLogicSet.ParentGameObj.X > m_target.X)
+                    if (ParentLogicSet.ParentGameObj.X > target.X)
                         ParentLogicSet.ParentGameObj.Flip = Microsoft.Xna.Framework.Graphics.SpriteEffects.FlipHorizontally;
                     else
                         ParentLogicSet.ParentGameObj.Flip = Microsoft.Xna.Framework.Graphics.SpriteEffects.None;

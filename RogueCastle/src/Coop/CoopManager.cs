@@ -33,6 +33,22 @@ namespace RogueCastle
         private static TextObj m_hudLabel;
         private static TextObj m_tag;
 
+        // Called once at startup (Game.LoadContent). Enemy AI is built at init with P1 baked into its logic actions
+        // (Move/Chase/Teleport/FireProjectile); this makes those actions use the enemy's *current* target instead,
+        // which RetargetEnemies() keeps on the nearest player. In solo the current target is always P1: no change.
+        public static void Initialize()
+        {
+            LogicAction.TargetResolver = ResolveLogicTarget;
+        }
+
+        private static GameObj ResolveLogicTarget(GameObj owner, GameObj storedTarget)
+        {
+            EnemyObj enemy = owner as EnemyObj;
+            if (enemy != null && storedTarget is PlayerObj && enemy.PlayerTarget != null)
+                return enemy.PlayerTarget;
+            return storedTarget;
+        }
+
         /// <summary>P2 is in the level, alive and controllable.</summary>
         public static bool PartnerActive
         {
@@ -417,11 +433,21 @@ namespace RogueCastle
 
         private static PlayerObj PickTarget(PlayerObj p1, EnemyObj enemy, bool forceP1)
         {
-            if (forceP1 || PartnerActive == false)
+            if (forceP1 || PartnerActive == false || p1.IsKilled)
                 return p1;
-            float d1 = Vector2.DistanceSquared(p1.Position, enemy.Position);
-            float d2 = Vector2.DistanceSquared(Partner.Position, enemy.Position);
-            return d2 < d1 ? Partner : p1;
+            float d1 = Vector2.Distance(p1.Position, enemy.Position);
+            float d2 = Vector2.Distance(Partner.Position, enemy.Position);
+
+            // Hysteresis: only switch when the other player is clearly closer, so enemies don't flicker
+            // between two players standing at about the same distance.
+            PlayerObj current = enemy.PlayerTarget;
+            if (current == p1 && d2 < d1 * CoopEV.RETARGET_SWITCH_RATIO)
+                return Partner;
+            if (current == Partner && d1 < d2 * CoopEV.RETARGET_SWITCH_RATIO)
+                return p1;
+            if (current != p1 && current != Partner)
+                return d2 < d1 ? Partner : p1;
+            return current;
         }
 
         #endregion

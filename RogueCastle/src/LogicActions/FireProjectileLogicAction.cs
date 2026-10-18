@@ -23,7 +23,11 @@ namespace RogueCastle
             if (ParentLogicSet != null && ParentLogicSet.IsActive == true)
             {
                 EnemyObj enemy = ParentLogicSet.ParentGameObj as EnemyObj;
+                // Coop: aimed projectiles were built at init with P1 as target; aim at the enemy's current target.
+                GameObj storedTarget = m_data.Target;
+                m_data.Target = ResolveTarget(storedTarget);
                 ProjectileObj obj = m_projectileManager.FireProjectile(m_data);
+                m_data.Target = storedTarget;
 
                 base.Execute();
             }

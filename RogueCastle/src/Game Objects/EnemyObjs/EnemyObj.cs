@@ -82,6 +82,7 @@ namespace RogueCastle
         protected float m_initialDelayCounter = 0;
 
         protected PlayerObj m_target;
+        public PlayerObj PlayerTarget { get { return m_target; } } // Coop: read by LogicAction.TargetResolver
         public GameTypes.EnemyDifficulty Difficulty { get; internal set; }
         protected string m_resetSpriteName; // The name of the sprite when its Reset() method is called.
 

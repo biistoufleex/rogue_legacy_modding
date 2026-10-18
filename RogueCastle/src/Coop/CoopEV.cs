@@ -21,6 +21,7 @@ namespace RogueCastle
         public const float CLASS_SWITCH_MAX_PRESS = 0.5f;    // a SELECT press shorter than this cycles the class
         public const float LEAVE_HOLD = 2f;                  // hold SELECT this long to leave
         public const float RETARGET_INTERVAL = 0.25f;        // seconds between enemy re-targeting passes
+        public const float RETARGET_SWITCH_RATIO = 0.8f;     // an enemy switches player only if the other one is < 80% of the distance
 
         public static readonly Color P2_OUTLINE = Color.Cyan;
         public static readonly Vector2 P2_HUD_POSITION = new Vector2(1030, 170); // under the minimap

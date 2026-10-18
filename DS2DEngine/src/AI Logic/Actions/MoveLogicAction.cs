@@ -29,14 +29,15 @@ namespace DS2DEngine
 
                 this.ParentLogicSet.ParentGameObj.CurrentSpeed = m_speed;
 
-                if (m_target != null)
+                GameObj target = ResolveTarget(m_target); // coop: follow the owner's current target
+                if (target != null)
                 {
                     Vector2 seekPosition;
 
                     if (m_moveTowards == true)
-                        seekPosition = m_target.Position;
+                        seekPosition = target.Position;
                     else
-                        seekPosition = 2 * this.ParentLogicSet.ParentGameObj.Position - m_target.Position;
+                        seekPosition = 2 * this.ParentLogicSet.ParentGameObj.Position - target.Position;
 
                     TurnToFace(seekPosition, this.ParentLogicSet.ParentGameObj.TurnSpeed);
 
@@ -45,7 +46,7 @@ namespace DS2DEngine
 
                     if (ParentLogicSet.ParentGameObj.LockFlip == false)
                     {
-                        if (ParentLogicSet.ParentGameObj.X > m_target.X)
+                        if (ParentLogicSet.ParentGameObj.X > target.X)
                             ParentLogicSet.ParentGameObj.Flip = Microsoft.Xna.Framework.Graphics.SpriteEffects.FlipHorizontally;
                         else
                             ParentLogicSet.ParentGameObj.Flip = Microsoft.Xna.Framework.Graphics.SpriteEffects.None;

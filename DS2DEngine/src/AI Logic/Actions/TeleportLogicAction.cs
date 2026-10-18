@@ -33,10 +33,11 @@ namespace DS2DEngine
                 if (m_minPosition != m_maxPosition)
                     m_newPosition = new Vector2(CDGMath.RandomInt((int)m_minPosition.X, (int)m_maxPosition.X), CDGMath.RandomInt((int)m_minPosition.Y, (int)m_maxPosition.Y));
 
-                if (m_target == null)
+                GameObj target = ResolveTarget(m_target); // coop: follow the owner's current target
+                if (target == null)
                     ParentLogicSet.ParentGameObj.Position = m_newPosition;
                 else
-                    ParentLogicSet.ParentGameObj.Position = m_target.Position + m_newPosition;
+                    ParentLogicSet.ParentGameObj.Position = target.Position + m_newPosition;
                 base.Execute();
             }
         }

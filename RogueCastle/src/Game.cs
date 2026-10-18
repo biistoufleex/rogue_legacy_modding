@@ -589,6 +589,8 @@ namespace RogueCastle
             SpriteLibrary.LoadSpritesheet(Content, "GameSpritesheets\\language3Spritesheet", false);
             SpriteLibrary.LoadSpritesheet(Content, "GameSpritesheets\\blitworksSpritesheet", false);
 
+            CoopManager.Initialize(); // Coop: enemy AI follows its current (nearest) player target
+
             // Guns mod: raw PNG + XML (not an .xnb), built by tools/build-gun-sprites.ps1. Optional:
             // SpellEV.GunSprite() falls back to vanilla sprites when it is missing.
             string gunsSheet = Path.Combine(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Content.RootDirectory), Path.Combine("Mods", "gunsSpritesheet.png"));

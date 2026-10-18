@@ -5,8 +5,10 @@
 > Compilé et lancé en solo sans régression visible ; **pas encore testé avec 2 manettes**.
 > Écarts par rapport au plan : pas d'overlay de debug manettes (phase 0) ; ajout d'un anti-blocage
 > (P2 immobile sur un bord pendant que P1 pousse l'autre → P2 ramené vers P1 après 2 s).
-> Limites connues : certains ennemis gardent P1 comme cible dans leurs actions pré-calculées ;
-> seul P1 peut naviguer dans le menu pause.
+> Ciblage : les actions d'IA pré-calculées (`Move/Chase/TeleportLogicAction`, `FireProjectileLogicAction`)
+> résolvent leur cible à l'exécution via `LogicAction.TargetResolver` → cible courante de l'ennemi
+> (joueur le plus proche, hystérésis 80 %). Seul le son 3D garde P1 comme auditeur.
+> Limite connue : seul P1 peut naviguer dans le menu pause.
 
 > Branche cible : `coop` (partant de `guns-prototype`). Tout en local, rien poussé.
 > Toutes les décisions de gameplay ci-dessous ont été prises pour toi ; elles sont regroupées
