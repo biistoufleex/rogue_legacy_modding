@@ -1,5 +1,13 @@
 # Rogue Legacy 1 — Mod « Guns & Co-op » (non officiel)
 
+<p align="center">
+  <img src="docs/images/banner_coop.png" alt="Rogue Legacy - Co-op" width="45%">
+  <img src="docs/images/banner_weapons.png" alt="Rogue Legacy - Weapons" width="45%">
+</p>
+
+<sub>Bannières : visuel officiel de Rogue Legacy © Cellar Door Games, avec un label ajouté pour le mod. Utilisées
+à titre d'illustration ; elles seront retirées à la demande de Cellar Door Games.</sub>
+
 > ⚠️ **Version modifiée, non officielle.** Ce dépôt est un mod amateur de **Rogue Legacy 1**, basé sur le
 > [code source officiel publié par Cellar Door Games](https://github.com/flibitijibibo/RogueLegacy1).
 > Il n'est ni produit, ni approuvé, ni supporté par Cellar Door Games.
