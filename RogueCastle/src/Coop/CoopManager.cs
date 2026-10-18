@@ -25,7 +25,7 @@ namespace RogueCastle
         private static float m_downTimer;
         private static float m_offscreenTimer;
         private static float m_pinnedTimer;
-        private static float m_selectHeld;
+        private static float m_selectPressStart = -1; // Game.TotalGameTime when SELECT went down, -1 = released
         private static float m_retargetTimer;
 
         private static PlayerHUDObj m_hud;
@@ -81,24 +81,28 @@ namespace RogueCastle
                 return false;
             }
 
-            float elapsed = 1 / 60f;
             bool consumed = false;
 
             // SELECT: short press = next class (camp only), long hold = leave.
+            // Timed with real game time: the game runs with a variable time step (IsFixedTimeStep = false),
+            // so counting frames would make the hold far shorter on high refresh-rate screens.
             if (InputManager.Pressed(Buttons.Back, m_padIndex))
             {
-                m_selectHeld += elapsed;
-                if (m_selectHeld >= CoopEV.LEAVE_HOLD)
+                if (m_selectPressStart < 0)
+                    m_selectPressStart = Game.TotalGameTime;
+                if (Game.TotalGameTime - m_selectPressStart >= CoopEV.LEAVE_HOLD)
                 {
+                    m_selectPressStart = -1;
                     Leave(level);
                     return true;
                 }
             }
-            else if (m_selectHeld > 0)
+            else if (m_selectPressStart >= 0)
             {
-                if (m_selectHeld < CoopEV.CLASS_SWITCH_MAX_PRESS && level.CurrentRoom.Name == "Start" && PartnerActive)
+                float heldFor = Game.TotalGameTime - m_selectPressStart;
+                m_selectPressStart = -1;
+                if (heldFor < CoopEV.CLASS_SWITCH_MAX_PRESS && level.CurrentRoom.Name == "Start" && PartnerActive)
                     CycleClass(level);
-                m_selectHeld = 0;
             }
 
             // START on P2's pad opens the shared pause screen (P1's GlobalInput never reads this pad: it is either
@@ -156,6 +160,7 @@ namespace RogueCastle
             m_padIndex = padIndex;
             m_sharesP1Pad = sharesP1Pad;
             m_classIndex = 0;
+            m_selectPressStart = -1;
             m_input = CreateInputMap(padIndex);
             if (sharesP1Pad)
                 Game.GlobalInput.LockGamepadInput = true;

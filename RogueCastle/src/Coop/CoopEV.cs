@@ -19,7 +19,7 @@ namespace RogueCastle
         public const float REVIVE_HP = 0.5f;                 // fraction of max HP when P2 comes back
         public const float GHOST_OPACITY = 0.35f;            // P2 opacity while knocked out
         public const float CLASS_SWITCH_MAX_PRESS = 0.5f;    // a SELECT press shorter than this cycles the class
-        public const float LEAVE_HOLD = 2f;                  // hold SELECT this long to leave
+        public const float LEAVE_HOLD = 3f;                  // hold SELECT this long (real seconds) to leave
         public const float RETARGET_INTERVAL = 0.25f;        // seconds between enemy re-targeting passes
         public const float RETARGET_SWITCH_RATIO = 0.8f;     // an enemy switches player only if the other one is < 80% of the distance
 
