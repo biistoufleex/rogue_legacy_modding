@@ -670,13 +670,14 @@ namespace RogueCastle
                 bool isPlayer = false; // Keeps track of whether or not it is the player hitting the enemy.
 
                 //if (otherBoxParent.CollisionTypeTag == GameTypes.CollisionType_PLAYER)
-                if (otherBoxParent == m_target)
+                PlayerObj hittingPlayer = otherBoxParent as PlayerObj; // Coop: was "== m_target", which ignored the other player
+                if (hittingPlayer != null)
                 {
-                    if (CDGMath.RandomFloat(0, 1) <= m_target.TotalCritChance && this.NonKillable == false && otherBoxParent == m_target)
+                    if (CDGMath.RandomFloat(0, 1) <= hittingPlayer.TotalCritChance && this.NonKillable == false)
                     {
                         //m_levelScreen.TextManager.DisplayStringText("Critical!", Color.Red, new Vector2(this.X, this.Bounds.Top - 65));
                         m_levelScreen.ImpactEffectPool.DisplayCriticalText(new Vector2(this.X, this.Bounds.Top));
-                        damage = (int)(damage * m_target.TotalCriticalDamage); // Critical hit!
+                        damage = (int)(damage * hittingPlayer.TotalCriticalDamage); // Critical hit!
                     }
                     isPlayer = true;
                 }
@@ -700,7 +701,16 @@ namespace RogueCastle
                 {
                     if (projectile != null || (otherBoxParent.CollisionTypeTag != GameTypes.CollisionType_GLOBAL_DAMAGE_WALL ||
                         (otherBoxParent.CollisionTypeTag == GameTypes.CollisionType_GLOBAL_DAMAGE_WALL && this.IsWeighted == true))) // Make sure flying enemies don't hit global damage walls.
-                    HitEnemy(damage, impactPosition, isPlayer);
+                    {
+                        // Coop: HitEnemy() treats m_target as the attacker (mana gain, air-attack bounce, vampirism, knockback side).
+                        PlayerObj attacker = hittingPlayer ?? (projectile != null ? projectile.Source as PlayerObj : null);
+                        PlayerObj previousTarget = m_target;
+                        if (attacker != null)
+                            m_target = attacker;
+                        HitEnemy(damage, impactPosition, isPlayer);
+                        if (attacker != null && m_target == attacker)
+                            m_target = previousTarget;
+                    }
                 }
                 else if (projectile != null && projectile.Spell == SpellType.Shout) // Fus roh dah logic.
                 {
@@ -730,7 +740,7 @@ namespace RogueCastle
                 }
 
                 // The invincibility counter is for the player only.
-                if (otherBoxParent == m_target)
+                if (hittingPlayer != null) // Coop: any player's melee hit, not just the current target's
                     m_invincibleCounter = InvincibilityTime; // Convert to milliseconds.
 
                 //m_levelScreen.ProjectileManager.DestroyProjectile(projectile);

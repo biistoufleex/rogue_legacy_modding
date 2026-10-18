@@ -5769,6 +5769,15 @@
   <data name="LOC_ID_SPELL_TYPE_15_F" xml:space="preserve">
     <value>Poignard véloce</value>
   </data>
+  <data name="LOC_ID_COOP_JOINED" xml:space="preserve">
+    <value>Le joueur 2 rejoint la partie !</value>
+  </data>
+  <data name="LOC_ID_COOP_JOIN_AT_START" xml:space="preserve">
+    <value>Joueur 2 : rejoindre au camp de départ</value>
+  </data>
+  <data name="LOC_ID_COOP_LEFT" xml:space="preserve">
+    <value>Le joueur 2 quitte la partie</value>
+  </data>
   <data name="LOC_ID_SPELL_TYPE_PISTOL" xml:space="preserve">
     <value>Pistolet</value>
   </data>

@@ -16,6 +16,15 @@ namespace RogueCastle
         #region Variables
         private Game m_game;
 
+        // Coop: per-character stats/input. P1 keeps the global ones, so solo behaviour is unchanged.
+        // Shared run state (gold, bosses, tutorial, special item...) always stays in Game.PlayerStats.
+        private PlayerStats m_stats;
+        private InputMap m_playerInput;
+        public PlayerStats Stats { get { return m_stats ?? Game.PlayerStats; } }
+        public InputMap PlayerInput { get { return m_playerInput ?? Game.GlobalInput; } }
+        public int PlayerNumber { get; private set; }
+        public bool IsCoopPartner { get { return PlayerNumber == 2; } }
+
         #region MapInputs
         private const int DEBUG_INPUT_SWAPWEAPON = 0;
         private const int DEBUG_INPUT_GIVEMANA = 1;
@@ -305,8 +314,18 @@ namespace RogueCastle
         }
 
         public PlayerObj(string spriteName, PlayerIndex playerIndex, PhysicsManager physicsManager, ProceduralLevelScreen levelToAttachTo, Game game)
+            : this(spriteName, playerIndex, physicsManager, levelToAttachTo, game, 1, null, null)
+        {
+        }
+
+        // Coop: playerNumber 2 gets its own stats and gamepad input map.
+        public PlayerObj(string spriteName, PlayerIndex playerIndex, PhysicsManager physicsManager, ProceduralLevelScreen levelToAttachTo, Game game,
+            int playerNumber, PlayerStats stats, InputMap playerInput)
             : base(spriteName, physicsManager, levelToAttachTo)  // Base is called first.
         {
+            PlayerNumber = playerNumber;
+            m_stats = stats;
+            m_playerInput = playerInput;
             m_game = game;
             m_playerLegs = this.GetChildAt(PlayerPart.Legs) as SpriteObj;
             m_playerHead = this.GetChildAt(PlayerPart.Head) as SpriteObj;
@@ -398,9 +417,9 @@ namespace RogueCastle
             m_internalScale = this.Scale;
 
             m_wizardSpellList = new List<byte>();
-            m_wizardSpellList.Add((byte)Game.PlayerStats.WizardSpellList.X);
-            m_wizardSpellList.Add((byte)Game.PlayerStats.WizardSpellList.Y);
-            m_wizardSpellList.Add((byte)Game.PlayerStats.WizardSpellList.Z);
+            m_wizardSpellList.Add((byte)Stats.WizardSpellList.X);
+            m_wizardSpellList.Add((byte)Stats.WizardSpellList.Y);
+            m_wizardSpellList.Add((byte)Stats.WizardSpellList.Z);
         }
 
         public void UpdateInternalScale()
@@ -431,34 +450,34 @@ namespace RogueCastle
                 string headPart = (_objectList[PlayerPart.Head] as IAnimateableObj).SpriteName;
                 int numberIndex = headPart.IndexOf("_") - 1;
                 headPart = headPart.Remove(numberIndex, 1);
-                if (Game.PlayerStats.Class == ClassType.Dragon)
+                if (Stats.Class == ClassType.Dragon)
                     headPart = headPart.Replace("_", PlayerPart.DragonHelm + "_");
-                else if (Game.PlayerStats.Class == ClassType.Traitor)
+                else if (Stats.Class == ClassType.Traitor)
                     headPart = headPart.Replace("_", PlayerPart.IntroHelm + "_");
                 else
-                    headPart = headPart.Replace("_", Game.PlayerStats.HeadPiece + "_");
+                    headPart = headPart.Replace("_", Stats.HeadPiece + "_");
                 _objectList[PlayerPart.Head].ChangeSprite(headPart);
 
                 string chestPart = (_objectList[PlayerPart.Chest] as IAnimateableObj).SpriteName;
                 numberIndex = chestPart.IndexOf("_") - 1;
                 chestPart = chestPart.Remove(numberIndex, 1);
-                chestPart = chestPart.Replace("_", Game.PlayerStats.ChestPiece + "_");
+                chestPart = chestPart.Replace("_", Stats.ChestPiece + "_");
                 _objectList[PlayerPart.Chest].ChangeSprite(chestPart);
 
                 string shoulderAPart = (_objectList[PlayerPart.ShoulderA] as IAnimateableObj).SpriteName;
                 numberIndex = shoulderAPart.IndexOf("_") - 1;
                 shoulderAPart = shoulderAPart.Remove(numberIndex, 1);
-                shoulderAPart = shoulderAPart.Replace("_", Game.PlayerStats.ShoulderPiece + "_");
+                shoulderAPart = shoulderAPart.Replace("_", Stats.ShoulderPiece + "_");
                 _objectList[PlayerPart.ShoulderA].ChangeSprite(shoulderAPart);
 
                 string shoulderBPart = (_objectList[PlayerPart.ShoulderB] as IAnimateableObj).SpriteName;
                 numberIndex = shoulderBPart.IndexOf("_") - 1;
                 shoulderBPart = shoulderBPart.Remove(numberIndex, 1);
-                shoulderBPart = shoulderBPart.Replace("_", Game.PlayerStats.ShoulderPiece + "_");
+                shoulderBPart = shoulderBPart.Replace("_", Stats.ShoulderPiece + "_");
                 _objectList[PlayerPart.ShoulderB].ChangeSprite(shoulderBPart);
 
                 // This is giving the SpellSword special arms and changing his sword opacity.
-                if (Game.PlayerStats.Class == ClassType.SpellSword || Game.PlayerStats.Class == ClassType.SpellSword2)
+                if (Stats.Class == ClassType.SpellSword || Stats.Class == ClassType.SpellSword2)
                 {
                     if (this.State == STATE_WALKING && (m_currentLogicSet != m_standingAttack3LogicSet || (m_currentLogicSet == m_standingAttack3LogicSet && m_currentLogicSet.IsActive == false)))
                         _objectList[PlayerPart.Arms].ChangeSprite("PlayerWalkingArmsSpellSword_Sprite");
@@ -482,38 +501,38 @@ namespace RogueCastle
                 _objectList[PlayerPart.Light].Opacity = 0.3f;
                 _objectList[PlayerPart.Light].Visible = false;
 
-                if (Game.PlayerStats.Class == ClassType.Banker2 && spriteName != "PlayerDeath_Character" && m_lightOn == true) // turn off the light if the player is dead.
+                if (Stats.Class == ClassType.Banker2 && spriteName != "PlayerDeath_Character" && m_lightOn == true) // turn off the light if the player is dead.
                     _objectList[PlayerPart.Light].Visible = true;
 
                 // This gives the player a shield in case he is the knight class.
-                if (Game.PlayerStats.Class == ClassType.Knight || Game.PlayerStats.Class == ClassType.Knight2)
+                if (Stats.Class == ClassType.Knight || Stats.Class == ClassType.Knight2)
                 {
                     string partName = spriteName.Replace("_Character", "Shield_Sprite");
                     _objectList[PlayerPart.Extra].Visible = true;
                     _objectList[PlayerPart.Extra].ChangeSprite(partName);
                 }
                 // This gives the player a headlamp in case he is the banker (spelunker) class.
-                else if (Game.PlayerStats.Class == ClassType.Banker || Game.PlayerStats.Class == ClassType.Banker2)
+                else if (Stats.Class == ClassType.Banker || Stats.Class == ClassType.Banker2)
                 {
                     string partName = spriteName.Replace("_Character", "Lamp_Sprite");
                     _objectList[PlayerPart.Extra].Visible = true;
                     _objectList[PlayerPart.Extra].ChangeSprite(partName);
                 }
                 // This gives the player a headlamp in case he is the ninja.
-                else if (Game.PlayerStats.Class == ClassType.Ninja || Game.PlayerStats.Class == ClassType.Ninja2)
+                else if (Stats.Class == ClassType.Ninja || Stats.Class == ClassType.Ninja2)
                 {
                     string partName = spriteName.Replace("_Character", "Headband_Sprite");
                     _objectList[PlayerPart.Extra].Visible = true;
                     _objectList[PlayerPart.Extra].ChangeSprite(partName);
                 }
                 // This gives the player a headlamp in case he is the wizard.
-                else if (Game.PlayerStats.Class == ClassType.Wizard || Game.PlayerStats.Class == ClassType.Wizard2)
+                else if (Stats.Class == ClassType.Wizard || Stats.Class == ClassType.Wizard2)
                 {
                     string partName = spriteName.Replace("_Character", "Beard_Sprite");
                     _objectList[PlayerPart.Extra].Visible = true;
                     _objectList[PlayerPart.Extra].ChangeSprite(partName);
                 }
-                else if (Game.PlayerStats.Class == ClassType.Barbarian || Game.PlayerStats.Class == ClassType.Barbarian2)
+                else if (Stats.Class == ClassType.Barbarian || Stats.Class == ClassType.Barbarian2)
                 {
                     string partName = spriteName.Replace("_Character", "Horns_Sprite");
                     _objectList[PlayerPart.Extra].Visible = true;
@@ -529,11 +548,11 @@ namespace RogueCastle
 
                 // This is for the hair.
                 _objectList[PlayerPart.Hair].Visible = true;
-                if (Game.PlayerStats.Traits.X == TraitType.Baldness || Game.PlayerStats.Traits.Y == TraitType.Baldness)
+                if (Stats.Traits.X == TraitType.Baldness || Stats.Traits.Y == TraitType.Baldness)
                     _objectList[PlayerPart.Hair].Visible = false;
 
                 // This is for male/female counterparts
-                if (Game.PlayerStats.IsFemale == false)
+                if (Stats.IsFemale == false)
                 {
                     _objectList[PlayerPart.Boobs].Visible = false;
                     _objectList[PlayerPart.Bowtie].Visible = false;
@@ -547,12 +566,12 @@ namespace RogueCastle
                 // Dragon wings.
                 _objectList[PlayerPart.Wings].Visible = false;
                 _objectList[PlayerPart.Wings].Opacity = 1;
-                if (Game.PlayerStats.Class == ClassType.Dragon)
+                if (Stats.Class == ClassType.Dragon)
                     _objectList[PlayerPart.Wings].Visible = true;
 
                 //_objectList[PlayerPart.Sword2].Visible = false; // This is needed until the sword is properly separated.
 
-                if (Game.PlayerStats.Class == ClassType.SpellSword || Game.PlayerStats.Class == ClassType.SpellSword2)
+                if (Stats.Class == ClassType.SpellSword || Stats.Class == ClassType.SpellSword2)
                     this.OutlineColour = Color.White;
                 else
                     this.OutlineColour = Color.Black;
@@ -578,11 +597,11 @@ namespace RogueCastle
                     InputControls();
             }
 
-            if (Game.PlayerStats.Class == ClassType.Traitor && (AttachedLevel.CurrentRoom is CarnivalShoot1BonusRoom) == false && (AttachedLevel.CurrentRoom is CarnivalShoot2BonusRoom) == false)
+            if (Stats.Class == ClassType.Traitor && (AttachedLevel.CurrentRoom is CarnivalShoot1BonusRoom) == false && (AttachedLevel.CurrentRoom is CarnivalShoot2BonusRoom) == false)
             {
                 if (IsKilled == false && State == STATE_DASHING) // Special controls only for the fountain class.
                 {
-                    if (Game.GlobalInput.JustPressed(InputMapType.PLAYER_SPELL1) && m_spellCastDelay <= 0 && CurrentMana >= PlayerEV.TRAITOR_CLOSE_MANACOST)
+                    if (PlayerInput.JustPressed(InputMapType.PLAYER_SPELL1) && m_spellCastDelay <= 0 && CurrentMana >= PlayerEV.TRAITOR_CLOSE_MANACOST)
                     {
                         m_spellCastDelay = 0.5f;
                         CurrentMana -= PlayerEV.TRAITOR_CLOSE_MANACOST;
@@ -591,17 +610,17 @@ namespace RogueCastle
                 }
             }
 
-            if (LevelEV.ENABLE_DEBUG_INPUT == true)
+            if (LevelEV.ENABLE_DEBUG_INPUT == true && IsCoopPartner == false)
                 HandleDebugInput();
 
-            if (SpellEV.GUNS_DEBUG == true && m_lockControls == false && IsKilled == false && InputManager.JustPressed(Keys.F9, null))
+            if (SpellEV.GUNS_DEBUG == true && IsCoopPartner == false && m_lockControls == false && IsKilled == false && InputManager.JustPressed(Keys.F9, null))
                 CycleGunDebug();
         }
 
         // Guns mod debug: F9 cycles Pistol -> Shotgun -> SMG (any other spell -> Pistol).
         private void CycleGunDebug()
         {
-            byte spell = Game.PlayerStats.Spell;
+            byte spell = Stats.Spell;
             if (spell == SpellType.Pistol)
                 spell = SpellType.Shotgun;
             else if (spell == SpellType.Shotgun)
@@ -609,9 +628,9 @@ namespace RogueCastle
             else
                 spell = SpellType.Pistol;
 
-            Game.PlayerStats.Spell = spell;
-            if (Game.PlayerStats.Class == ClassType.Wizard2)
-                Game.PlayerStats.WizardSpellList = SpellType.GetNext3Spells(); // guns are in the Wizard list, so IndexOf() finds them
+            Stats.Spell = spell;
+            if (Stats.Class == ClassType.Wizard2)
+                Stats.WizardSpellList = SpellType.GetNext3Spells(); // guns are in the Wizard list, so IndexOf() finds them
             m_levelScreen.UpdatePlayerSpellIcon();
             m_levelScreen.TextManager.DisplayStringText(SpellType.ToStringID(spell), Color.Yellow, new Vector2(this.X, this.Bounds.Top - 50));
         }
@@ -620,16 +639,16 @@ namespace RogueCastle
         {
             if (InputManager.JustPressed(Keys.T, null))
             {
-                Game.PlayerStats.GodMode = !Game.PlayerStats.GodMode;
+                Stats.GodMode = !Stats.GodMode;
                 SoundManager.PlaySound("Fart1", "Fart2", "Fart3");
                 m_levelScreen.ImpactEffectPool.DisplayFartEffect(this);
             }
 
             if (m_debugInputMap.JustPressed(DEBUG_INPUT_SWAPWEAPON))
             {
-                Game.PlayerStats.Spell++;
-                if (Game.PlayerStats.Spell >= SpellType.Total) // was '>' (off-by-one, allowed the invalid id == Total)
-                    Game.PlayerStats.Spell = 1;
+                Stats.Spell++;
+                if (Stats.Spell >= SpellType.Total) // was '>' (off-by-one, allowed the invalid id == Total)
+                    Stats.Spell = 1;
                 m_levelScreen.UpdatePlayerSpellIcon();
             }
             if (m_debugInputMap.JustPressed(DEBUG_INPUT_GIVEHEALTH))
@@ -766,17 +785,17 @@ namespace RogueCastle
 
             //}
 
-            //if (Game.GlobalInput.JustPressed(InputMapType.MENU_PAUSE))// && Game.PlayerStats.TutorialComplete == true)
+            //if (PlayerInput.JustPressed(InputMapType.MENU_PAUSE))// && Game.PlayerStats.TutorialComplete == true)
             //{
             //    (m_levelScreen.ScreenManager as RCScreenManager).DisplayScreen(ScreenType.Pause, true);
             //}
 
-            if (Game.GlobalInput.JustPressed(InputMapType.MENU_MAP) && Game.PlayerStats.TutorialComplete == true && m_levelScreen.CurrentRoom.Name != "Start" && m_levelScreen.CurrentRoom.Name != "Boss" && m_levelScreen.CurrentRoom.Name != "ChallengeBoss")
+            if (IsCoopPartner == false && PlayerInput.JustPressed(InputMapType.MENU_MAP) && Game.PlayerStats.TutorialComplete == true && m_levelScreen.CurrentRoom.Name != "Start" && m_levelScreen.CurrentRoom.Name != "Boss" && m_levelScreen.CurrentRoom.Name != "ChallengeBoss")
                 m_levelScreen.DisplayMap(false);
             // Code for blocking.
             if (State != STATE_TANOOKI)
             {
-                if (Game.GlobalInput.Pressed(InputMapType.PLAYER_BLOCK) && CanBlock == true && m_currentLogicSet.IsActive == false)
+                if (PlayerInput.Pressed(InputMapType.PLAYER_BLOCK) && CanBlock == true && m_currentLogicSet.IsActive == false)
                 {
                     if (CurrentMana >= GameEV.KNIGHT_BLOCK_DRAIN)
                     {
@@ -791,10 +810,10 @@ namespace RogueCastle
                         }
 
                         State = STATE_BLOCKING;
-                        if (Game.GlobalInput.JustPressed(InputMapType.PLAYER_BLOCK) == true)
+                        if (PlayerInput.JustPressed(InputMapType.PLAYER_BLOCK) == true)
                             SoundManager.PlaySound("Player_Block_Action");
                     }
-                    else if (Game.GlobalInput.JustPressed(InputMapType.PLAYER_BLOCK))
+                    else if (PlayerInput.JustPressed(InputMapType.PLAYER_BLOCK))
                         SoundManager.PlaySound("Error_Spell");
                 }
                 else
@@ -818,19 +837,19 @@ namespace RogueCastle
             // Code for moving left and right.
             if (State != STATE_BLOCKING && State != STATE_TANOOKI)
             {
-                if (Game.GlobalInput.Pressed(InputMapType.PLAYER_LEFT1) || Game.GlobalInput.Pressed(InputMapType.PLAYER_LEFT2) || Game.GlobalInput.Pressed(InputMapType.PLAYER_RIGHT1) || Game.GlobalInput.Pressed(InputMapType.PLAYER_RIGHT2))
+                if (PlayerInput.Pressed(InputMapType.PLAYER_LEFT1) || PlayerInput.Pressed(InputMapType.PLAYER_LEFT2) || PlayerInput.Pressed(InputMapType.PLAYER_RIGHT1) || PlayerInput.Pressed(InputMapType.PLAYER_RIGHT2))
                 {
                     if (m_isTouchingGround == true)// && State != STATE_CROUCHING)
                         State = STATE_WALKING;
 
-                    if ((Game.GlobalInput.Pressed(InputMapType.PLAYER_RIGHT1) || Game.GlobalInput.Pressed(InputMapType.PLAYER_RIGHT2)) && (m_collidingRight == false || m_isTouchingGround == true))
+                    if ((PlayerInput.Pressed(InputMapType.PLAYER_RIGHT1) || PlayerInput.Pressed(InputMapType.PLAYER_RIGHT2)) && (m_collidingRight == false || m_isTouchingGround == true))
                     {
                         this.HeadingX = 1;
                         this.CurrentSpeed = TotalMovementSpeed; // this.Speed;
 
                     }
-                    else if ((Game.GlobalInput.Pressed(InputMapType.PLAYER_LEFT1) || Game.GlobalInput.Pressed(InputMapType.PLAYER_LEFT2))
-                        && Game.GlobalInput.Pressed(InputMapType.PLAYER_RIGHT1) == false && Game.GlobalInput.Pressed(InputMapType.PLAYER_RIGHT2) == false && (m_collidingLeft == false || m_isTouchingGround == true))
+                    else if ((PlayerInput.Pressed(InputMapType.PLAYER_LEFT1) || PlayerInput.Pressed(InputMapType.PLAYER_LEFT2))
+                        && PlayerInput.Pressed(InputMapType.PLAYER_RIGHT1) == false && PlayerInput.Pressed(InputMapType.PLAYER_RIGHT2) == false && (m_collidingLeft == false || m_isTouchingGround == true))
                     {
                         this.HeadingX = -1; 
                         this.CurrentSpeed = TotalMovementSpeed; // this.Speed;
@@ -838,11 +857,11 @@ namespace RogueCastle
                     else
                         this.CurrentSpeed = 0;
 
-                    if (m_currentLogicSet.IsActive == false || (m_currentLogicSet.IsActive == true && (Game.PlayerStats.Traits.X == TraitType.Hypermobility || Game.PlayerStats.Traits.Y == TraitType.Hypermobility)))
+                    if (m_currentLogicSet.IsActive == false || (m_currentLogicSet.IsActive == true && (Stats.Traits.X == TraitType.Hypermobility || Stats.Traits.Y == TraitType.Hypermobility)))
                     {
-                        if (Game.GlobalInput.Pressed(InputMapType.PLAYER_RIGHT1) || Game.GlobalInput.Pressed(InputMapType.PLAYER_RIGHT2))
+                        if (PlayerInput.Pressed(InputMapType.PLAYER_RIGHT1) || PlayerInput.Pressed(InputMapType.PLAYER_RIGHT2))
                             this.Flip = SpriteEffects.None;
-                        else if (Game.GlobalInput.Pressed(InputMapType.PLAYER_LEFT1) || Game.GlobalInput.Pressed(InputMapType.PLAYER_LEFT2))
+                        else if (PlayerInput.Pressed(InputMapType.PLAYER_LEFT1) || PlayerInput.Pressed(InputMapType.PLAYER_LEFT2))
                             this.Flip = SpriteEffects.FlipHorizontally;
                     }
 
@@ -865,20 +884,20 @@ namespace RogueCastle
 
             bool justJumped = false; // Bool for detect a jump and a flight call.
             // Code for jumping and double jumping.  Also, dragons cannot jump.
-            if (State != STATE_BLOCKING && State != STATE_FLYING && State != STATE_TANOOKI && Game.PlayerStats.Class != ClassType.Dragon)
+            if (State != STATE_BLOCKING && State != STATE_FLYING && State != STATE_TANOOKI && Stats.Class != ClassType.Dragon)
             {
-                if ((Game.GlobalInput.JustPressed(InputMapType.PLAYER_JUMP1)|| Game.GlobalInput.JustPressed(InputMapType.PLAYER_JUMP2)) && m_isTouchingGround == true && m_dropThroughGroundTimer <= 0)
+                if ((PlayerInput.JustPressed(InputMapType.PLAYER_JUMP1)|| PlayerInput.JustPressed(InputMapType.PLAYER_JUMP2)) && m_isTouchingGround == true && m_dropThroughGroundTimer <= 0)
                 {
                     State = STATE_JUMPING;
                     AccelerationY = -JumpHeight;
                     m_isJumping = true;
 
-                    if (Game.PlayerStats.Traits.X == TraitType.Gigantism|| Game.PlayerStats.Traits.Y == TraitType.Gigantism)
+                    if (Stats.Traits.X == TraitType.Gigantism|| Stats.Traits.Y == TraitType.Gigantism)
                     {
                         SoundManager.PlaySound("Player_Jump_04_Low");
                         SoundManager.PlaySound("Player_WalkUp01_Low");
                     }
-                    if (Game.PlayerStats.Traits.X == TraitType.Dwarfism || Game.PlayerStats.Traits.Y == TraitType.Dwarfism)
+                    if (Stats.Traits.X == TraitType.Dwarfism || Stats.Traits.Y == TraitType.Dwarfism)
                     {
                         SoundManager.PlaySound("Player_Jump_04_High");
                         SoundManager.PlaySound("Player_WalkUp01_High");
@@ -889,7 +908,7 @@ namespace RogueCastle
                         SoundManager.PlaySound("Player_WalkUp01");
                     }
 
-                    if (Game.PlayerStats.Traits.X == TraitType.IBS || Game.PlayerStats.Traits.Y == TraitType.IBS)
+                    if (Stats.Traits.X == TraitType.IBS || Stats.Traits.Y == TraitType.IBS)
                     {
                         if (CDGMath.RandomInt(0, 100) >= GameEV.FART_CHANCE) //82 //70 - TEDDY LOWERING ODDS OF FARTS
                         {
@@ -899,7 +918,7 @@ namespace RogueCastle
                     }
                     justJumped = true;
                 }
-                else if ((Game.GlobalInput.JustPressed(InputMapType.PLAYER_JUMP1) || Game.GlobalInput.JustPressed(InputMapType.PLAYER_JUMP2)) && m_isTouchingGround == false && m_doubleJumpCount < TotalDoubleJumps && m_dropThroughGroundTimer <= 0)
+                else if ((PlayerInput.JustPressed(InputMapType.PLAYER_JUMP1) || PlayerInput.JustPressed(InputMapType.PLAYER_JUMP2)) && m_isTouchingGround == false && m_doubleJumpCount < TotalDoubleJumps && m_dropThroughGroundTimer <= 0)
                 {
                     State = STATE_JUMPING;
                     AccelerationY = -DoubleJumpHeight;
@@ -912,7 +931,7 @@ namespace RogueCastle
 
                     SoundManager.PlaySound("Player_DoubleJump");
 
-                    if (Game.PlayerStats.Traits.X == TraitType.IBS || Game.PlayerStats.Traits.Y == TraitType.IBS)
+                    if (Stats.Traits.X == TraitType.IBS || Stats.Traits.Y == TraitType.IBS)
                     {
                         if (CDGMath.RandomInt(0, 100) >= GameEV.FART_CHANCE) //82 //70 - TEDDY LOWERING ODDS OF FARTS
                         {
@@ -944,13 +963,13 @@ namespace RogueCastle
 
             // Code for attacking.
             // Dragons cannot attack. They only shoot spells.
-            if (m_currentLogicSet.IsActive == false && State != STATE_BLOCKING && State != STATE_TANOOKI && Game.PlayerStats.Class != ClassType.Dragon) // Only attack when you're not doing an animation.
+            if (m_currentLogicSet.IsActive == false && State != STATE_BLOCKING && State != STATE_TANOOKI && Stats.Class != ClassType.Dragon) // Only attack when you're not doing an animation.
             {
-                if ((Game.GlobalInput.JustPressed(InputMapType.PLAYER_DOWN1) || Game.GlobalInput.JustPressed(InputMapType.PLAYER_DOWN2)) && CanAirAttackDownward == true
+                if ((PlayerInput.JustPressed(InputMapType.PLAYER_DOWN1) || PlayerInput.JustPressed(InputMapType.PLAYER_DOWN2)) && CanAirAttackDownward == true
                     && Game.GameConfig.QuickDrop == true && State == STATE_JUMPING && m_dropThroughGroundTimer <= 0)
                 {
                     m_currentLogicSet = m_airAttackLS;
-                    if (Game.PlayerStats.Class == ClassType.SpellSword || Game.PlayerStats.Class == ClassType.SpellSword2)
+                    if (Stats.Class == ClassType.SpellSword || Stats.Class == ClassType.SpellSword2)
                         FadeSword();
 
                     if (m_assassinSpecialActive == true)
@@ -958,12 +977,12 @@ namespace RogueCastle
 
                     m_currentLogicSet.Execute();
                 }
-                else if (Game.GlobalInput.JustPressed(InputMapType.PLAYER_ATTACK))
+                else if (PlayerInput.JustPressed(InputMapType.PLAYER_ATTACK))
                 {
                     if (State == STATE_JUMPING)
                     {
                         //Tween.RunFunction(0f, this, "PerformDelayedAirAttack");
-                        if ((Game.GlobalInput.Pressed(InputMapType.PLAYER_DOWN1) || Game.GlobalInput.Pressed(InputMapType.PLAYER_DOWN2)) && CanAirAttackDownward == true)
+                        if ((PlayerInput.Pressed(InputMapType.PLAYER_DOWN1) || PlayerInput.Pressed(InputMapType.PLAYER_DOWN2)) && CanAirAttackDownward == true)
                             m_currentLogicSet = m_airAttackLS;
                         else
                         {
@@ -971,7 +990,7 @@ namespace RogueCastle
                             //if (this.AccelerationY > 0)
                             //    this.AccelerationY = -250;
                         }
-                        if (Game.PlayerStats.Class == ClassType.SpellSword || Game.PlayerStats.Class == ClassType.SpellSword2)
+                        if (Stats.Class == ClassType.SpellSword || Stats.Class == ClassType.SpellSword2)
                             FadeSword();
 
                         if (m_assassinSpecialActive == true)
@@ -997,7 +1016,7 @@ namespace RogueCastle
                             m_attackCounter = 0;
                         }
 
-                        if (Game.PlayerStats.Class == ClassType.SpellSword || Game.PlayerStats.Class == ClassType.SpellSword2)
+                        if (Stats.Class == ClassType.SpellSword || Stats.Class == ClassType.SpellSword2)
                             FadeSword();
 
                         if (m_assassinSpecialActive == true)
@@ -1013,7 +1032,7 @@ namespace RogueCastle
             if (Game.PlayerStats.TutorialComplete == true)
             {
                 bool fireballCasted = false;
-                if (Game.PlayerStats.Spell == SpellType.DragonFireNeo && (Game.GlobalInput.Pressed(InputMapType.PLAYER_ATTACK) || Game.GlobalInput.Pressed(InputMapType.PLAYER_SPELL1)) && m_rapidSpellCastDelay <= 0)
+                if (Stats.Spell == SpellType.DragonFireNeo && (PlayerInput.Pressed(InputMapType.PLAYER_ATTACK) || PlayerInput.Pressed(InputMapType.PLAYER_SPELL1)) && m_rapidSpellCastDelay <= 0)
                 {
                     m_rapidSpellCastDelay = 0.2f;
                     CastSpell(false);
@@ -1021,57 +1040,57 @@ namespace RogueCastle
                 }
 
                 // Guns mod: SMG fires every SMG_FireDelay while the spell key is held (same timer as DragonFireNeo).
-                bool smgEquipped = Game.PlayerStats.Spell == SpellType.SMG; // captured before CastSpell (Savant trait can change the spell)
-                if (smgEquipped && Game.GlobalInput.Pressed(InputMapType.PLAYER_SPELL1) && m_rapidSpellCastDelay <= 0)
+                bool smgEquipped = Stats.Spell == SpellType.SMG; // captured before CastSpell (Savant trait can change the spell)
+                if (smgEquipped && PlayerInput.Pressed(InputMapType.PLAYER_SPELL1) && m_rapidSpellCastDelay <= 0)
                 {
                     int smgCost = (int)(SpellEV.GetManaCost(SpellType.SMG) * (1 - SkillSystem.GetSkill(SkillType.Mana_Cost_Down).ModifierAmount));
                     // Out of mana: only play the error sound on the initial press, not every tick.
-                    if (CurrentMana >= smgCost || Game.GlobalInput.JustPressed(InputMapType.PLAYER_SPELL1))
+                    if (CurrentMana >= smgCost || PlayerInput.JustPressed(InputMapType.PLAYER_SPELL1))
                     {
                         m_rapidSpellCastDelay = SpellEV.SMG_FireDelay;
                         CastSpell(false);
                     }
                 }
 
-                if (smgEquipped == false && (m_spellCastDelay <= 0 || Game.PlayerStats.Class == ClassType.Dragon))
+                if (smgEquipped == false && (m_spellCastDelay <= 0 || Stats.Class == ClassType.Dragon))
                 {
-                    if (Game.GlobalInput.JustPressed(InputMapType.PLAYER_SPELL1) || (Game.PlayerStats.Class == ClassType.Dragon && Game.GlobalInput.JustPressed(InputMapType.PLAYER_ATTACK)))
+                    if (PlayerInput.JustPressed(InputMapType.PLAYER_SPELL1) || (Stats.Class == ClassType.Dragon && PlayerInput.JustPressed(InputMapType.PLAYER_ATTACK)))
                     {
-                        if ((Game.PlayerStats.Class == ClassType.Dragon && fireballCasted == true) == false) // Prevents casting the spell twice.
+                        if ((Stats.Class == ClassType.Dragon && fireballCasted == true) == false) // Prevents casting the spell twice.
                         CastSpell(false);
                     }
                 }
 
-                if (Game.GlobalInput.JustPressed(InputMapType.PLAYER_BLOCK))
+                if (PlayerInput.JustPressed(InputMapType.PLAYER_BLOCK))
                 {
                     RoomObj room = m_levelScreen.CurrentRoom;
                     if (room is CarnivalShoot1BonusRoom == false && room is CarnivalShoot2BonusRoom == false && room is ChestBonusRoomObj == false)
                     {
-                        if (Game.PlayerStats.Class == ClassType.SpellSword2 && m_spellCastDelay <= 0)
+                        if (Stats.Class == ClassType.SpellSword2 && m_spellCastDelay <= 0)
                             CastSpell(false, true);
-                        else if (Game.PlayerStats.Class == ClassType.Lich2)
+                        else if (Stats.Class == ClassType.Lich2)
                             ConvertHPtoMP();
-                        else if (Game.PlayerStats.Class == ClassType.Assassin2 && CurrentMana > 0)
+                        else if (Stats.Class == ClassType.Assassin2 && CurrentMana > 0)
                         {
                             if (m_assassinSpecialActive == false)
                                 ActivateAssassinAbility();
                             else
                                 DisableAssassinAbility();
                         }
-                        else if (Game.PlayerStats.Class == ClassType.Wizard2)
+                        else if (Stats.Class == ClassType.Wizard2)
                             SwapSpells();
-                        else if (Game.PlayerStats.Class == ClassType.Ninja2)
+                        else if (Stats.Class == ClassType.Ninja2)
                             NinjaTeleport();
-                        else if (Game.PlayerStats.Class == ClassType.Knight2)
+                        else if (Stats.Class == ClassType.Knight2)
                         {
                             if (this.State == STATE_TANOOKI)
                                 DeactivateTanooki();
-                            else if (Game.GlobalInput.Pressed(InputMapType.PLAYER_DOWN1) || Game.GlobalInput.Pressed(InputMapType.PLAYER_DOWN2))
+                            else if (PlayerInput.Pressed(InputMapType.PLAYER_DOWN1) || PlayerInput.Pressed(InputMapType.PLAYER_DOWN2))
                                 ActivateTanooki();
                         }
-                        else if (Game.PlayerStats.Class == ClassType.Barbarian2)
+                        else if (Stats.Class == ClassType.Barbarian2)
                             CastFuhRohDah();
-                        else if (Game.PlayerStats.Class == ClassType.Traitor)
+                        else if (Stats.Class == ClassType.Traitor)
                         {
                             if (CurrentMana >= PlayerEV.TRAITOR_AXE_MANACOST && m_spellCastDelay <= 0)
                             {
@@ -1087,7 +1106,7 @@ namespace RogueCastle
                             DeactivateTanooki();
                     }
                     
-                    if (Game.PlayerStats.Class == ClassType.Dragon)
+                    if (Stats.Class == ClassType.Dragon)
                     {
                         if (State != STATE_DRAGON)
                         {
@@ -1103,7 +1122,7 @@ namespace RogueCastle
                             m_isFlying = false;
                         }
                     }
-                    else if (Game.PlayerStats.Class == ClassType.Banker2)
+                    else if (Stats.Class == ClassType.Banker2)
                     {
                         if (m_lightOn == true)
                         {
@@ -1121,7 +1140,7 @@ namespace RogueCastle
                 }
 
                 // Extra handling to link jump to dragon flight.
-                if (Game.PlayerStats.Class == ClassType.Dragon && (Game.GlobalInput.JustPressed(InputMapType.PLAYER_JUMP1) || Game.GlobalInput.JustPressed(InputMapType.PLAYER_JUMP2)))
+                if (Stats.Class == ClassType.Dragon && (PlayerInput.JustPressed(InputMapType.PLAYER_JUMP1) || PlayerInput.JustPressed(InputMapType.PLAYER_JUMP2)))
                 {
                     if (State != STATE_DRAGON)
                     {
@@ -1144,7 +1163,7 @@ namespace RogueCastle
             {
                 if (CanAirDash == true)
                 {
-                    if (Game.GlobalInput.JustPressed(InputMapType.PLAYER_DASHLEFT))
+                    if (PlayerInput.JustPressed(InputMapType.PLAYER_DASHLEFT))
                     {
                         //if (m_isTouchingGround == false) // Ensures the player can only air dash once.
                             m_airDashCount++;
@@ -1164,7 +1183,7 @@ namespace RogueCastle
 
                         SoundManager.PlaySound("Player_Dash");
 
-                        if (Game.PlayerStats.Traits.X == TraitType.IBS || Game.PlayerStats.Traits.Y == TraitType.IBS)
+                        if (Stats.Traits.X == TraitType.IBS || Stats.Traits.Y == TraitType.IBS)
                         {
                             if (CDGMath.RandomInt(0, 100) >= GameEV.FART_CHANCE)
                             {
@@ -1173,7 +1192,7 @@ namespace RogueCastle
                             }
                         }
                     }
-                    else if (Game.GlobalInput.JustPressed(InputMapType.PLAYER_DASHRIGHT))
+                    else if (PlayerInput.JustPressed(InputMapType.PLAYER_DASHRIGHT))
                     {
                         //if (m_isTouchingGround == false)
                             m_airDashCount++;
@@ -1195,7 +1214,7 @@ namespace RogueCastle
 
                         SoundManager.PlaySound("Player_Dash");
 
-                        if (Game.PlayerStats.Traits.X == TraitType.IBS || Game.PlayerStats.Traits.Y == TraitType.IBS)
+                        if (Stats.Traits.X == TraitType.IBS || Stats.Traits.Y == TraitType.IBS)
                         {
                             if (CDGMath.RandomInt(0, 100) >= GameEV.FART_CHANCE)
                             {
@@ -1211,9 +1230,9 @@ namespace RogueCastle
             if (State == STATE_FLYING || State == STATE_DRAGON)
             {
                 // Controls for moving the player while flying.
-                if (Game.GlobalInput.Pressed(InputMapType.PLAYER_UP1) || Game.GlobalInput.Pressed(InputMapType.PLAYER_UP2) || InputManager.Pressed(Buttons.LeftThumbstickUp, PlayerIndex.One))
+                if (PlayerInput.Pressed(InputMapType.PLAYER_UP1) || PlayerInput.Pressed(InputMapType.PLAYER_UP2) || InputManager.Pressed(Buttons.LeftThumbstickUp, PlayerIndex.One))
                     this.AccelerationY = -this.TotalMovementSpeed;
-                else if (Game.GlobalInput.Pressed(InputMapType.PLAYER_DOWN1) || Game.GlobalInput.Pressed(InputMapType.PLAYER_DOWN2) || InputManager.Pressed(Buttons.LeftThumbstickDown, PlayerIndex.One))
+                else if (PlayerInput.Pressed(InputMapType.PLAYER_DOWN1) || PlayerInput.Pressed(InputMapType.PLAYER_DOWN2) || InputManager.Pressed(Buttons.LeftThumbstickDown, PlayerIndex.One))
                     this.AccelerationY = this.TotalMovementSpeed;
                 else
                     this.AccelerationY = 0;
@@ -1233,7 +1252,7 @@ namespace RogueCastle
                 }
 
                 // Press Jump to disable flight.
-                if ((Game.GlobalInput.JustPressed(InputMapType.PLAYER_JUMP1) || Game.GlobalInput.JustPressed(InputMapType.PLAYER_JUMP2)) && State != STATE_DRAGON)
+                if ((PlayerInput.JustPressed(InputMapType.PLAYER_JUMP1) || PlayerInput.JustPressed(InputMapType.PLAYER_JUMP2)) && State != STATE_DRAGON)
                 {
                     //m_flightCounter = 0;
                     State = STATE_JUMPING;
@@ -1241,7 +1260,7 @@ namespace RogueCastle
                     m_isFlying = false;
                 }
             }
-            else if ((Game.GlobalInput.JustPressed(InputMapType.PLAYER_JUMP1) || Game.GlobalInput.JustPressed(InputMapType.PLAYER_JUMP2)) && m_isTouchingGround == false && justJumped == false && m_doubleJumpCount >= TotalDoubleJumps && m_dropThroughGroundTimer <= 0
+            else if ((PlayerInput.JustPressed(InputMapType.PLAYER_JUMP1) || PlayerInput.JustPressed(InputMapType.PLAYER_JUMP2)) && m_isTouchingGround == false && justJumped == false && m_doubleJumpCount >= TotalDoubleJumps && m_dropThroughGroundTimer <= 0
                  && CanFly == true && m_flightCounter > 0 && State != STATE_FLYING && State != STATE_DRAGON && State != STATE_BLOCKING && State != STATE_TANOOKI)
             {
                 this.AccelerationY = 0;
@@ -1252,7 +1271,7 @@ namespace RogueCastle
             }
 
             //else if (m_isTouchingGround == false && CanFly == true && m_flightCounter > 0 && 
-            //    (Game.GlobalInput.JustPressed(InputMapType.PLAYER_UP1) || Game.GlobalInput.JustPressed(InputMapType.PLAYER_UP2)) && State != STATE_FLYING && State != STATE_DRAGON && State != STATE_BLOCKING && State != STATE_TANOOKI)
+            //    (PlayerInput.JustPressed(InputMapType.PLAYER_UP1) || PlayerInput.JustPressed(InputMapType.PLAYER_UP2)) && State != STATE_FLYING && State != STATE_DRAGON && State != STATE_BLOCKING && State != STATE_TANOOKI)
             //{
             //    this.AccelerationY = 0;
             //    //m_flightCounter = TotalFlightTime;
@@ -1264,7 +1283,7 @@ namespace RogueCastle
 
         public void PerformDelayedAirAttack()
         {
-            if ((Game.GlobalInput.Pressed(InputMapType.PLAYER_DOWN1) || Game.GlobalInput.Pressed(InputMapType.PLAYER_DOWN2)) && CanAirAttackDownward == true)
+            if ((PlayerInput.Pressed(InputMapType.PLAYER_DOWN1) || PlayerInput.Pressed(InputMapType.PLAYER_DOWN2)) && CanAirAttackDownward == true)
                 m_currentLogicSet = m_airAttackLS;
             else
             {
@@ -1272,7 +1291,7 @@ namespace RogueCastle
                 //if (this.AccelerationY > 0)
                 //    this.AccelerationY = -250;
             }
-            if (Game.PlayerStats.Class == ClassType.SpellSword || Game.PlayerStats.Class == ClassType.SpellSword2)
+            if (Stats.Class == ClassType.SpellSword || Stats.Class == ClassType.SpellSword2)
                 FadeSword();
 
             //if (m_assassinSpecialActive == true)
@@ -1297,7 +1316,7 @@ namespace RogueCastle
             // Spellsword and assassin effects sholud not appear in the ending room.
             if (m_levelScreen.CurrentRoom is EndingRoomObj == false && this.ScaleX > 0.1f) // Scale makes sure he doesn't have this effect while teleporting.
             {
-                if ((Game.PlayerStats.Traits.Y == TraitType.Ambilevous || Game.PlayerStats.Traits.X == TraitType.Ambilevous) && CurrentSpeed == 0)
+                if ((Stats.Traits.Y == TraitType.Ambilevous || Stats.Traits.X == TraitType.Ambilevous) && CurrentSpeed == 0)
                 {
                     if (m_ambilevousTimer > 0)
                     {
@@ -1311,7 +1330,7 @@ namespace RogueCastle
                 }
 
                 // Adds the spellsword sparkle effect.
-                if (Game.PlayerStats.Class == ClassType.SpellSword || Game.PlayerStats.Class == ClassType.SpellSword2)
+                if (Stats.Class == ClassType.SpellSword || Stats.Class == ClassType.SpellSword2)
                 {
                     if (m_wizardSparkleCounter > 0)
                     {
@@ -1326,7 +1345,7 @@ namespace RogueCastle
                 }
 
                 // Adding assassin smoke effect.
-                if (Game.PlayerStats.Class == ClassType.Assassin || Game.PlayerStats.Class == ClassType.Assassin2)
+                if (Stats.Class == ClassType.Assassin || Stats.Class == ClassType.Assassin2)
                 {
                     if (m_assassinSmokeTimer > 0)
                     {
@@ -1374,12 +1393,12 @@ namespace RogueCastle
 
             if (State == STATE_WALKING)
             {
-                if (Game.PlayerStats.Traits.X == TraitType.Gigantism || Game.PlayerStats.Traits.Y == TraitType.Gigantism)
+                if (Stats.Traits.X == TraitType.Gigantism || Stats.Traits.Y == TraitType.Gigantism)
                 {
                     m_walkDownSoundLow.Update();
                     m_walkUpSoundLow.Update();
                 }
-                else if (Game.PlayerStats.Traits.X == TraitType.Dwarfism || Game.PlayerStats.Traits.Y == TraitType.Dwarfism)
+                else if (Stats.Traits.X == TraitType.Dwarfism || Stats.Traits.Y == TraitType.Dwarfism)
                 {
                     m_walkDownSoundHigh.Update();
                     m_walkUpSoundHigh.Update();
@@ -1435,7 +1454,7 @@ namespace RogueCastle
                 // Jump deceleration code.
                 if (this.State != STATE_HURT)
                 {
-                    if ((((Game.GlobalInput.Pressed(InputMapType.PLAYER_JUMP1) == false && Game.GlobalInput.Pressed(InputMapType.PLAYER_JUMP2) == false)|| (m_currentLogicSet == m_airAttackLS && m_currentLogicSet.IsActive == true && IsAirAttacking == false))) && m_isTouchingGround == false && AccelerationY < 0)
+                    if ((((PlayerInput.Pressed(InputMapType.PLAYER_JUMP1) == false && PlayerInput.Pressed(InputMapType.PLAYER_JUMP2) == false)|| (m_currentLogicSet == m_airAttackLS && m_currentLogicSet.IsActive == true && IsAirAttacking == false))) && m_isTouchingGround == false && AccelerationY < 0)
                     {
                         AccelerationY += JumpDeceleration * elapsedSeconds;
                         //if (AccelerationY > 0) // This code doesn't seem to do anything.
@@ -1443,7 +1462,7 @@ namespace RogueCastle
                     }
                 }
 
-                if (Game.PlayerStats.Class == ClassType.Dragon && this.CurrentMana < MaxMana)
+                if (Stats.Class == ClassType.Dragon && this.CurrentMana < MaxMana)
                 {
                     m_dragonManaRechargeCounter += elapsedSeconds;
                     if (m_dragonManaRechargeCounter >= GameEV.MANA_OVER_TIME_TIC_RATE)
@@ -1645,7 +1664,7 @@ namespace RogueCastle
                 //elongatedPlayerBounds.Width += 20;
                 foreach (IPhysicsObj collisionObj in PhysicsMngr.ObjectList)
                 {
-                    if (Game.PlayerStats.Traits.X == TraitType.NoFurniture || Game.PlayerStats.Traits.Y == TraitType.NoFurniture)
+                    if (Stats.Traits.X == TraitType.NoFurniture || Stats.Traits.Y == TraitType.NoFurniture)
                     {
                         if (collisionObj is PhysicsObj && collisionObj is HazardObj == false) // Disable ground collision check for bookcases when you have this trait active.
                             continue;
@@ -1788,7 +1807,7 @@ namespace RogueCastle
                 {
                     if (State == STATE_JUMPING || State == STATE_FLYING || State == STATE_HURT) // Player just landed.
                     {
-                        if (Game.PlayerStats.Traits.X == TraitType.Gigantism || Game.PlayerStats.Traits.Y == TraitType.Gigantism)
+                        if (Stats.Traits.X == TraitType.Gigantism || Stats.Traits.Y == TraitType.Gigantism)
                         {
                             SoundManager.PlaySound("Player_Land_Low");
                             if (this.AccelerationY > 1400)
@@ -1799,7 +1818,7 @@ namespace RogueCastle
                                 AttachedLevel.ImpactEffectPool.DisplayDustEffect(new Vector2(this.TerrainBounds.Right, this.Bounds.Bottom));
                             }
                         }
-                        if (Game.PlayerStats.Traits.X == TraitType.Dwarfism || Game.PlayerStats.Traits.Y == TraitType.Dwarfism)
+                        if (Stats.Traits.X == TraitType.Dwarfism || Stats.Traits.Y == TraitType.Dwarfism)
                             SoundManager.PlaySound("Player_Land_High");
                         else
                             SoundManager.PlaySound("Player_Land");
@@ -1842,8 +1861,8 @@ namespace RogueCastle
                     {
                         if (closestTerrain != null && this.ControlsLocked == false)
                         {
-                            if ((((Game.GlobalInput.Pressed(InputMapType.PLAYER_DOWN1) || Game.GlobalInput.Pressed(InputMapType.PLAYER_DOWN2)) && (Game.GlobalInput.JustPressed(InputMapType.PLAYER_JUMP1) || Game.GlobalInput.JustPressed(InputMapType.PLAYER_JUMP2)))
-                                || (Game.GameConfig.QuickDrop == true && (Game.GlobalInput.JustPressed(InputMapType.PLAYER_DOWN1) || Game.GlobalInput.JustPressed(InputMapType.PLAYER_DOWN2)))) && closestTerrain.CollidesBottom == false && State != STATE_TANOOKI) // Code for dropping through ground.
+                            if ((((PlayerInput.Pressed(InputMapType.PLAYER_DOWN1) || PlayerInput.Pressed(InputMapType.PLAYER_DOWN2)) && (PlayerInput.JustPressed(InputMapType.PLAYER_JUMP1) || PlayerInput.JustPressed(InputMapType.PLAYER_JUMP2)))
+                                || (Game.GameConfig.QuickDrop == true && (PlayerInput.JustPressed(InputMapType.PLAYER_DOWN1) || PlayerInput.JustPressed(InputMapType.PLAYER_DOWN2)))) && closestTerrain.CollidesBottom == false && State != STATE_TANOOKI) // Code for dropping through ground.
                             {
                                 this.AccelerationY = 0;
                                 this.Y += 15; // This number must be 1 unit larger than the margin of error in CheckGroundCollision(). Or not? Added a different check using m_droppingThroughGround that should be more reliable.
@@ -1928,9 +1947,10 @@ namespace RogueCastle
             IPhysicsObj otherBoxParent = otherBox.AbsParent as IPhysicsObj;
             TeleporterObj teleporter = otherBox.Parent as TeleporterObj;
 
-            if (teleporter != null && ControlsLocked == false && IsTouchingGround == true)
+            // Coop: teleporters, boss doors and chests are P1-only (P1 drives room loading, map and saves).
+            if (teleporter != null && IsCoopPartner == false && ControlsLocked == false && IsTouchingGround == true)
             {
-                if (Game.GlobalInput.JustPressed(InputMapType.PLAYER_UP1) || Game.GlobalInput.JustPressed(InputMapType.PLAYER_UP2))
+                if (PlayerInput.JustPressed(InputMapType.PLAYER_UP1) || PlayerInput.JustPressed(InputMapType.PLAYER_UP2))
                 {
                     StopAllSpells();
                     this.LockControls();
@@ -1942,9 +1962,9 @@ namespace RogueCastle
 
             // Logic for moving the player from a boss entrance to a boss room, and vice versa.
             DoorObj door = otherBox.Parent as DoorObj;
-            if (door != null && ControlsLocked == false && IsTouchingGround == true)
+            if (door != null && IsCoopPartner == false && ControlsLocked == false && IsTouchingGround == true)
             {
-                if (door.IsBossDoor == true && door.Locked == false && (Game.GlobalInput.JustPressed(InputMapType.PLAYER_UP1) || Game.GlobalInput.JustPressed(InputMapType.PLAYER_UP2)))
+                if (door.IsBossDoor == true && door.Locked == false && (PlayerInput.JustPressed(InputMapType.PLAYER_UP1) || PlayerInput.JustPressed(InputMapType.PLAYER_UP2)))
                 {
                     // This line ensures you don't access the donation box at the same time as entering a boss room.
                     if (door.Room.DonationBox == null || (door.Room.DonationBox != null && (door.Room.DonationBox.IsTouching == false || door.Room.DonationBox.Visible == false)))
@@ -1992,7 +2012,7 @@ namespace RogueCastle
             }
 
 
-            if (Game.PlayerStats.Traits.X == TraitType.NoFurniture || Game.PlayerStats.Traits.Y == TraitType.NoFurniture)
+            if (Stats.Traits.X == TraitType.NoFurniture || Stats.Traits.Y == TraitType.NoFurniture)
             {
                 if (breakableObj != null)
                 {
@@ -2041,7 +2061,7 @@ namespace RogueCastle
                 // Super hack to prevent player from moving through mouseholes regardless of his speed.
                 if (otherBoxParent.CollidesLeft == false && otherBoxParent.CollidesRight == false && otherBoxParent.CollidesTop == true && otherBoxParent.CollidesBottom == true && otherBoxParent is HazardObj == false)
                 {
-                    if (Game.PlayerStats.Traits.X != TraitType.Dwarfism && Game.PlayerStats.Traits.Y != TraitType.Dwarfism)
+                    if (Stats.Traits.X != TraitType.Dwarfism && Stats.Traits.Y != TraitType.Dwarfism)
                     {
                         if (this.X < otherBoxParent.TerrainBounds.Center.X)
                             this.X -= this.TerrainBounds.Right - otherBoxParent.TerrainBounds.Left;
@@ -2160,9 +2180,9 @@ namespace RogueCastle
             }
 
             ChestObj chest = otherBoxParent as ChestObj;
-            if (chest != null && ControlsLocked == false && m_isTouchingGround == true)
+            if (chest != null && IsCoopPartner == false && ControlsLocked == false && m_isTouchingGround == true)
             {
-                if (Game.GlobalInput.JustPressed(InputMapType.PLAYER_UP1) || Game.GlobalInput.JustPressed(InputMapType.PLAYER_UP2))
+                if (PlayerInput.JustPressed(InputMapType.PLAYER_UP1) || PlayerInput.JustPressed(InputMapType.PLAYER_UP2))
                 {
                     if (chest.IsOpen == false)
                         chest.OpenChest(m_levelScreen.ItemDropManager, this);
@@ -2172,31 +2192,31 @@ namespace RogueCastle
 
         public void PlayAttackSound()
         {
-            if (Game.PlayerStats.IsFemale == true)
+            if (Stats.IsFemale == true)
                 SoundManager.PlaySound("Player_Female_Effort_03", "Player_Female_Effort_04", "Player_Female_Effort_05", "Player_Female_Effort_06", "Player_Female_Effort_07",
                     "Blank", "Blank", "Blank");
             else
                 SoundManager.PlaySound("Player_Male_Effort_01", "Player_Male_Effort_02", "Player_Male_Effort_04", "Player_Male_Effort_05", "Player_Male_Effort_07",
                       "Blank", "Blank", "Blank");
 
-            if (Game.PlayerStats.Class == ClassType.SpellSword || Game.PlayerStats.Class == ClassType.SpellSword2)
+            if (Stats.Class == ClassType.SpellSword || Stats.Class == ClassType.SpellSword2)
                 SoundManager.PlaySound("Player_Attack_Sword_Spell_01", "Player_Attack_Sword_Spell_02", "Player_Attack_Sword_Spell_03");
             else
             {
                 if (IsAirAttacking == false)
                 {
-                    if (Game.PlayerStats.Traits.X == TraitType.Hypergonadism || Game.PlayerStats.Traits.Y == TraitType.Hypergonadism)
+                    if (Stats.Traits.X == TraitType.Hypergonadism || Stats.Traits.Y == TraitType.Hypergonadism)
                         SoundManager.PlaySound("Player_Attack01_Low", "Player_Attack02_Low");
-                    else if (Game.PlayerStats.Traits.X == TraitType.Hypogonadism || Game.PlayerStats.Traits.Y == TraitType.Hypogonadism)
+                    else if (Stats.Traits.X == TraitType.Hypogonadism || Stats.Traits.Y == TraitType.Hypogonadism)
                         SoundManager.PlaySound("Player_Attack01_High", "Player_Attack02_High");
                     else
                         SoundManager.PlaySound("Player_Attack01", "Player_Attack02");
                 }
                 else
                 {
-                    if (Game.PlayerStats.Traits.X == TraitType.Hypergonadism || Game.PlayerStats.Traits.Y == TraitType.Hypergonadism)
+                    if (Stats.Traits.X == TraitType.Hypergonadism || Stats.Traits.Y == TraitType.Hypergonadism)
                         SoundManager.PlaySound("Player_AttackDown01_Low", "Player_AttackDown02_Low");
-                    else if (Game.PlayerStats.Traits.X == TraitType.Hypogonadism || Game.PlayerStats.Traits.Y == TraitType.Hypogonadism)
+                    else if (Stats.Traits.X == TraitType.Hypogonadism || Stats.Traits.Y == TraitType.Hypogonadism)
                         SoundManager.PlaySound("Player_AttackDown01_High", "Player_AttackDown02_High");
                     else
                         SoundManager.PlaySound("Player_AttackDown01", "Player_AttackDown02");
@@ -2334,7 +2354,7 @@ namespace RogueCastle
                 if (Game.PlayerStats.TutorialComplete == false)
                     damage = 0;
 
-                if (Game.PlayerStats.GodMode == false)
+                if (Stats.GodMode == false)
                     this.CurrentHealth -= damage;
 
                 EnemyObj enemyObj = obj as EnemyObj;
@@ -2364,9 +2384,9 @@ namespace RogueCastle
                 m_isFlying = false;
                 this.DisableGravity = false;
 
-                if (CanBeKnockedBack == true)//(CanBeKnockedBack == true && (Game.PlayerStats.Traits.X != TraitType.Endomorph && Game.PlayerStats.Traits.Y != TraitType.Endomorph))// && Game.TraitSystem.GetModifierAmount(m_traitArray, TraitType.Knockback_Immune) <= 0) // If you have knockback immune trait, don't get knocked back //TEDDY MAKING KNOCKBACK NOT 0 FOR ECTOMORPH
+                if (CanBeKnockedBack == true)//(CanBeKnockedBack == true && (Stats.Traits.X != TraitType.Endomorph && Stats.Traits.Y != TraitType.Endomorph))// && Game.TraitSystem.GetModifierAmount(m_traitArray, TraitType.Knockback_Immune) <= 0) // If you have knockback immune trait, don't get knocked back //TEDDY MAKING KNOCKBACK NOT 0 FOR ECTOMORPH
                 {
-                    if (Game.PlayerStats.Traits.X == TraitType.Tourettes || Game.PlayerStats.Traits.Y == TraitType.Tourettes)
+                    if (Stats.Traits.X == TraitType.Tourettes || Stats.Traits.Y == TraitType.Tourettes)
                     {
                         int randBubble = CDGMath.RandomInt(1, 4);
                         m_swearBubble.ChangeSprite("SwearBubble" + randBubble + "_Sprite");
@@ -2385,10 +2405,10 @@ namespace RogueCastle
                     CurrentSpeed = 0;
 
                     float knockbackMod = 1;// Game.TraitSystem.GetModifierAmount(m_traitArray, TraitType.Knockback_Weak);
-                    if (Game.PlayerStats.Traits.X == TraitType.Ectomorph || Game.PlayerStats.Traits.Y == TraitType.Ectomorph)
+                    if (Stats.Traits.X == TraitType.Ectomorph || Stats.Traits.Y == TraitType.Ectomorph)
                         knockbackMod = GameEV.TRAIT_ECTOMORPH;
 
-                    if (Game.PlayerStats.Traits.X == TraitType.Endomorph || Game.PlayerStats.Traits.Y == TraitType.Endomorph)
+                    if (Stats.Traits.X == TraitType.Endomorph || Stats.Traits.Y == TraitType.Endomorph)
                         knockbackMod = GameEV.TRAIT_ENDOMORPH;
 
                     if (obj.Bounds.Left + obj.Bounds.Width / 2 > this.X)
@@ -2400,7 +2420,9 @@ namespace RogueCastle
                 else
                     m_invincibleCounter = InvincibilityTime; // Kick in the invincible timer automatically if the player is hit and knockback_immune trait exists.
 
-                if (CurrentHealth <= 0)
+                if (CurrentHealth <= 0 && IsCoopPartner) // Coop: no revive item / death defy / challenge kick for P2
+                    Kill();
+                else if (CurrentHealth <= 0)
                 {
                     if (Game.PlayerStats.SpecialItem == SpecialItemType.Revive)
                     {
@@ -2438,7 +2460,7 @@ namespace RogueCastle
 
                 if (m_levelScreen.IsDisposed == false)
                 {
-                    if (Game.PlayerStats.Traits.X == TraitType.Hypochondriac || Game.PlayerStats.Traits.Y == TraitType.Hypochondriac)
+                    if (Stats.Traits.X == TraitType.Hypochondriac || Stats.Traits.Y == TraitType.Hypochondriac)
                         m_levelScreen.TextManager.DisplayNumberText(damage * 100 + CDGMath.RandomInt(1,99), Color.Red, new Vector2(this.X, this.Bounds.Top));
                     else
                         m_levelScreen.TextManager.DisplayNumberText(damage, Color.Red, new Vector2(this.X, this.Bounds.Top));
@@ -2465,7 +2487,7 @@ namespace RogueCastle
                     }
                 }
 
-                if (Game.PlayerStats.IsFemale == true)
+                if (Stats.IsFemale == true)
                     SoundManager.PlaySound("Player_Female_Damage_03", "Player_Female_Damage_04", "Player_Female_Damage_05", "Player_Female_Damage_06", "Player_Female_Damage_07");
                 else
                     SoundManager.PlaySound("Player_Male_Injury_01", "Player_Male_Injury_02", "Player_Male_Injury_03", "Player_Male_Injury_04", "Player_Male_Injury_05",
@@ -2482,6 +2504,15 @@ namespace RogueCastle
 
         public override void Kill(bool giveXP = true)
         {
+            if (IsCoopPartner) // Coop: P2 is only knocked out, never a game over.
+            {
+                m_translocatorSprite.Visible = false;
+                m_swearBubble.Visible = false;
+                base.Kill(false);
+                CoopManager.OnPartnerKilled(this);
+                return;
+            }
+
             ChallengeBossRoomObj challengeRoom = AttachedLevel.CurrentRoom as ChallengeBossRoomObj;
             if (challengeRoom != null)
             {
@@ -2503,7 +2534,7 @@ namespace RogueCastle
 
         public void RunDeathAnimation1()
         {
-            if (Game.PlayerStats.IsFemale == true)
+            if (Stats.IsFemale == true)
                 SoundManager.PlaySound("Player_Female_Death_01", "Player_Female_Death_02");
             else
                 SoundManager.PlaySound("Player_Male_Death_01", "Player_Male_Death_02", "Player_Male_Death_03", "Player_Male_Death_04", "Player_Male_Death_05",
@@ -2593,9 +2624,9 @@ namespace RogueCastle
         {
             if (this.State != STATE_TANOOKI)
             {
-                for (int i = 0; i < Game.PlayerStats.GetEquippedArray.Length; i++)
+                for (int i = 0; i < Stats.GetEquippedArray.Length; i++)
                 {
-                    int equippedItem = Game.PlayerStats.GetEquippedArray[i];
+                    int equippedItem = Stats.GetEquippedArray[i];
 
                     if (equippedItem != -1) // -1 means no item equipped.
                     {
@@ -2654,7 +2685,7 @@ namespace RogueCastle
 
         public void CastSpell(bool activateSecondary, bool megaSpell = false)
         {
-            byte spellType = Game.PlayerStats.Spell;
+            byte spellType = Stats.Spell;
 
             Color textureColor = Color.White;
             ProjectileData projData = SpellEV.GetProjData(spellType, this);
@@ -2668,15 +2699,15 @@ namespace RogueCastle
                 m_spellCastDelay = 0.5f;
                 if (AttachedLevel.CurrentRoom is CarnivalShoot1BonusRoom == false && AttachedLevel.CurrentRoom is CarnivalShoot2BonusRoom == false)
                 {
-                    if (Game.PlayerStats.Traits.X == TraitType.Savant || Game.PlayerStats.Traits.Y == TraitType.Savant)
+                    if (Stats.Traits.X == TraitType.Savant || Stats.Traits.Y == TraitType.Savant)
                     {
-                        if (Game.PlayerStats.Class != ClassType.Dragon && Game.PlayerStats.Class != ClassType.Traitor)
+                        if (Stats.Class != ClassType.Dragon && Stats.Class != ClassType.Traitor)
                         {
-                            byte[] spellList = ClassType.GetSpellList(Game.PlayerStats.Class);
+                            byte[] spellList = ClassType.GetSpellList(Stats.Class);
                             do
                             {
-                                Game.PlayerStats.Spell = spellList[CDGMath.RandomInt(0, spellList.Length - 1)];
-                            } while (Game.PlayerStats.Spell == SpellType.Translocator || Game.PlayerStats.Spell == SpellType.TimeStop || Game.PlayerStats.Spell == SpellType.DamageShield);
+                                Stats.Spell = spellList[CDGMath.RandomInt(0, spellList.Length - 1)];
+                            } while (Stats.Spell == SpellType.Translocator || Stats.Spell == SpellType.TimeStop || Stats.Spell == SpellType.DamageShield);
                             AttachedLevel.UpdatePlayerSpellIcon();
                         }
                     }
@@ -2700,7 +2731,7 @@ namespace RogueCastle
 
             if (spellType != SpellType.Bounce && spellType != SpellType.DamageShield)
             {
-                if (Game.PlayerStats.Traits.X == TraitType.Ambilevous || Game.PlayerStats.Traits.Y == TraitType.Ambilevous)
+                if (Stats.Traits.X == TraitType.Ambilevous || Stats.Traits.Y == TraitType.Ambilevous)
                     projData.SourceAnchor = new Vector2(projData.SourceAnchor.X * -1, projData.SourceAnchor.Y);
             }
 
@@ -2751,7 +2782,7 @@ namespace RogueCastle
                         if (spellType == SpellType.DualBlades)
                         {
                             projData.Angle = new Vector2(-10, -10);
-                            if (Game.PlayerStats.Traits.X == TraitType.Ambilevous || Game.PlayerStats.Traits.Y == TraitType.Ambilevous)
+                            if (Stats.Traits.X == TraitType.Ambilevous || Stats.Traits.Y == TraitType.Ambilevous)
                             {
                                 projData.SourceAnchor = new Vector2(-50, -30);
                                 m_levelScreen.ImpactEffectPool.SpellCastEffect(proj.Position, -proj.Rotation, megaSpell);
@@ -2781,7 +2812,7 @@ namespace RogueCastle
                         
                         if (spellType == SpellType.Close)
                             m_levelScreen.ImpactEffectPool.SpellCastEffect(proj.Position, 90, megaSpell);
-                        else if (Game.PlayerStats.Traits.X == TraitType.Ambilevous || Game.PlayerStats.Traits.Y == TraitType.Ambilevous)
+                        else if (Stats.Traits.X == TraitType.Ambilevous || Stats.Traits.Y == TraitType.Ambilevous)
                             m_levelScreen.ImpactEffectPool.SpellCastEffect(proj.Position, -proj.Rotation, megaSpell);
                         else
                             m_levelScreen.ImpactEffectPool.SpellCastEffect(proj.Position, proj.Rotation, megaSpell);
@@ -2799,8 +2830,8 @@ namespace RogueCastle
                         proj.TextureColor = textureColor;
                         proj.ShowIcon = true;
                         proj.AltX = altX;
-                        if ((this.Flip == SpriteEffects.FlipHorizontally && Game.PlayerStats.Traits.X != TraitType.Ambilevous && Game.PlayerStats.Traits.Y != TraitType.Ambilevous)
-                            || (this.Flip == SpriteEffects.None && (Game.PlayerStats.Traits.X == TraitType.Ambilevous || Game.PlayerStats.Traits.Y == TraitType.Ambilevous)))
+                        if ((this.Flip == SpriteEffects.FlipHorizontally && Stats.Traits.X != TraitType.Ambilevous && Stats.Traits.Y != TraitType.Ambilevous)
+                            || (this.Flip == SpriteEffects.None && (Stats.Traits.X == TraitType.Ambilevous || Stats.Traits.Y == TraitType.Ambilevous)))
                             proj.AltX = -altX;
                         proj.AltY = 0.5f;
 
@@ -2978,7 +3009,7 @@ namespace RogueCastle
                         }
 
                         m_translocatorSprite.GetChildAt(PlayerPart.Light).Visible = false;
-                        if (Game.PlayerStats.Class == ClassType.SpellSword || Game.PlayerStats.Class == ClassType.SpellSword2)
+                        if (Stats.Class == ClassType.SpellSword || Stats.Class == ClassType.SpellSword2)
                         {
                             m_translocatorSprite.GetChildAt(PlayerPart.Sword1).Visible = false;
                             m_translocatorSprite.GetChildAt(PlayerPart.Sword2).Visible = false;
@@ -3067,11 +3098,11 @@ namespace RogueCastle
         {
             if (MaxHealth > 1)
             {
-                int baseHealthLost = (int)((MaxHealth - Game.PlayerStats.LichHealth) * GameEV.LICH_HEALTH_CONVERSION_PERCENT);
-                int lichHealthLost = (int)(Game.PlayerStats.LichHealth * GameEV.LICH_HEALTH_CONVERSION_PERCENT);
+                int baseHealthLost = (int)((MaxHealth - Stats.LichHealth) * GameEV.LICH_HEALTH_CONVERSION_PERCENT);
+                int lichHealthLost = (int)(Stats.LichHealth * GameEV.LICH_HEALTH_CONVERSION_PERCENT);
 
                 int maxMana = (int)((BaseMana +
-                            GetEquipmentMana() + (Game.PlayerStats.BonusMana * GameEV.ITEM_STAT_MAXMP_AMOUNT) +
+                            GetEquipmentMana() + (Stats.BonusMana * GameEV.ITEM_STAT_MAXMP_AMOUNT) +
                             SkillSystem.GetSkill(SkillType.Mana_Up).ModifierAmount +
                             SkillSystem.GetSkill(SkillType.Mana_Up_Final).ModifierAmount) * GameEV.LICH_MAX_MP_OFF_BASE);
 
@@ -3079,9 +3110,9 @@ namespace RogueCastle
                 {
                     SoundManager.PlaySound("Lich_Swap");
 
-                    Game.PlayerStats.LichHealthMod *= GameEV.LICH_HEALTH_CONVERSION_PERCENT;
-                    Game.PlayerStats.LichHealth -= lichHealthLost;
-                    Game.PlayerStats.LichMana += baseHealthLost + lichHealthLost;
+                    Stats.LichHealthMod *= GameEV.LICH_HEALTH_CONVERSION_PERCENT;
+                    Stats.LichHealth -= lichHealthLost;
+                    Stats.LichMana += baseHealthLost + lichHealthLost;
                     this.CurrentMana += baseHealthLost + lichHealthLost;
                     if (CurrentHealth > this.MaxHealth)
                         this.CurrentHealth = this.MaxHealth;
@@ -3124,15 +3155,15 @@ namespace RogueCastle
             //if (AttachedLevel.CurrentRoom is CarnivalShoot1BonusRoom == false && AttachedLevel.CurrentRoom is CarnivalShoot2BonusRoom == false)
             {
                 SoundManager.PlaySound("Spell_Switch");
-                m_wizardSpellList[0] = (byte)Game.PlayerStats.WizardSpellList.X;
-                m_wizardSpellList[1] = (byte)Game.PlayerStats.WizardSpellList.Y;
-                m_wizardSpellList[2] = (byte)Game.PlayerStats.WizardSpellList.Z;
+                m_wizardSpellList[0] = (byte)Stats.WizardSpellList.X;
+                m_wizardSpellList[1] = (byte)Stats.WizardSpellList.Y;
+                m_wizardSpellList[2] = (byte)Stats.WizardSpellList.Z;
 
-                int spellIndex = m_wizardSpellList.IndexOf(Game.PlayerStats.Spell);
+                int spellIndex = m_wizardSpellList.IndexOf(Stats.Spell);
                 spellIndex++;
                 if (spellIndex >= m_wizardSpellList.Count)
                     spellIndex = 0;
-                Game.PlayerStats.Spell = m_wizardSpellList[spellIndex];
+                Stats.Spell = m_wizardSpellList[spellIndex];
                 m_levelScreen.UpdatePlayerSpellIcon();
 
                 if (m_damageShieldCast == true)
@@ -3517,7 +3548,7 @@ namespace RogueCastle
                 // This is to maintain the player's helmet tint.
                 Game.ColourSwapShader.Parameters["desiredTint"].SetValue(m_playerHead.TextureColor.ToVector4());
                 // This is the Tint Removal effect, that removes the tint from his face.
-                if (Game.PlayerStats.Class == ClassType.Lich || Game.PlayerStats.Class == ClassType.Lich2)
+                if (Stats.Class == ClassType.Lich || Stats.Class == ClassType.Lich2)
                 {
                     Game.ColourSwapShader.Parameters["Opacity"].SetValue(this.Opacity);
                     Game.ColourSwapShader.Parameters["ColourSwappedOut1"].SetValue(m_skinColour1.ToVector4());
@@ -3526,7 +3557,7 @@ namespace RogueCastle
                     Game.ColourSwapShader.Parameters["ColourSwappedOut2"].SetValue(m_skinColour2.ToVector4());
                     Game.ColourSwapShader.Parameters["ColourSwappedIn2"].SetValue(m_lichColour2.ToVector4());
                 }
-                else if (Game.PlayerStats.Class == ClassType.Assassin || Game.PlayerStats.Class == ClassType.Assassin2)
+                else if (Stats.Class == ClassType.Assassin || Stats.Class == ClassType.Assassin2)
                 {
                     Game.ColourSwapShader.Parameters["Opacity"].SetValue(this.Opacity);
                     Game.ColourSwapShader.Parameters["ColourSwappedOut1"].SetValue(m_skinColour1.ToVector4());
@@ -3551,7 +3582,7 @@ namespace RogueCastle
                 camera.End();
 
                 camera.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, camera.GetTransformation());
-                if (Game.PlayerStats.IsFemale == true)
+                if (Stats.IsFemale == true)
                     _objectList[PlayerPart.Bowtie].Draw(camera);
                 _objectList[PlayerPart.Glasses].Draw(camera);
                 _objectList[PlayerPart.Extra].Draw(camera);
@@ -3656,7 +3687,7 @@ namespace RogueCastle
         {
             get 
             { 
-                int intelligence = (int)((BaseMagicDamage + SkillSystem.GetSkill(SkillType.Magic_Damage_Up).ModifierAmount + GetEquipmentMagicDamage() + (Game.PlayerStats.BonusMagic * GameEV.ITEM_STAT_MAGIC_AMOUNT)) * ClassMagicDamageGivenMultiplier);
+                int intelligence = (int)((BaseMagicDamage + SkillSystem.GetSkill(SkillType.Magic_Damage_Up).ModifierAmount + GetEquipmentMagicDamage() + (Stats.BonusMagic * GameEV.ITEM_STAT_MAGIC_AMOUNT)) * ClassMagicDamageGivenMultiplier);
                 if (intelligence < 1)
                     intelligence = 1;
                 return intelligence;
@@ -3689,7 +3720,7 @@ namespace RogueCastle
             get
             {
                 return CDGMath.RandomInt(MinDamage + GetEquipmentDamage(), MaxDamage + GetEquipmentDamage()) +
-                    (Game.PlayerStats.BonusStrength * GameEV.ITEM_STAT_STRENGTH_AMOUNT) +
+                    (Stats.BonusStrength * GameEV.ITEM_STAT_STRENGTH_AMOUNT) +
                     (DamageGainPerLevel * Game.PlayerStats.CurrentLevel);
             }
         }
@@ -3699,13 +3730,13 @@ namespace RogueCastle
             get
             {
                 // if dextrocardic, return Max health instead of max mana.
-                if (Game.PlayerStats.Traits.X == TraitType.Dextrocardia || Game.PlayerStats.Traits.Y == TraitType.Dextrocardia)
+                if (Stats.Traits.X == TraitType.Dextrocardia || Stats.Traits.Y == TraitType.Dextrocardia)
                 {
                     int maxMana = (int)Math.Round(((BaseHealth + GetEquipmentHealth() +
                    (HealthGainPerLevel * Game.PlayerStats.CurrentLevel) +
-                     (Game.PlayerStats.BonusHealth * GameEV.ITEM_STAT_MAXHP_AMOUNT) +
+                     (Stats.BonusHealth * GameEV.ITEM_STAT_MAXHP_AMOUNT) +
                       SkillSystem.GetSkill(SkillType.Health_Up).ModifierAmount +
-                         SkillSystem.GetSkill(SkillType.Health_Up_Final).ModifierAmount) * ClassTotalHPMultiplier * Game.PlayerStats.LichHealthMod), MidpointRounding.AwayFromZero) + Game.PlayerStats.LichHealth; // Lich health is separate from modifiers.
+                         SkillSystem.GetSkill(SkillType.Health_Up_Final).ModifierAmount) * ClassTotalHPMultiplier * Stats.LichHealthMod), MidpointRounding.AwayFromZero) + Stats.LichHealth; // Lich health is separate from modifiers.
 
                     if (maxMana < 1)
                         maxMana = 1;
@@ -3716,9 +3747,9 @@ namespace RogueCastle
                     int maxMana = (int)((BaseMana +
                         GetEquipmentMana() +
                         (ManaGainPerLevel * Game.PlayerStats.CurrentLevel) +
-                        (Game.PlayerStats.BonusMana * GameEV.ITEM_STAT_MAXMP_AMOUNT) +
+                        (Stats.BonusMana * GameEV.ITEM_STAT_MAXMP_AMOUNT) +
                         SkillSystem.GetSkill(SkillType.Mana_Up).ModifierAmount +
-                        SkillSystem.GetSkill(SkillType.Mana_Up_Final).ModifierAmount) * ClassTotalMPMultiplier) + Game.PlayerStats.LichMana; // Lich mana is separate from modifiers.
+                        SkillSystem.GetSkill(SkillType.Mana_Up_Final).ModifierAmount) * ClassTotalMPMultiplier) + Stats.LichMana; // Lich mana is separate from modifiers.
 
                     if (maxMana < 1)
                         maxMana = 1;
@@ -3732,14 +3763,14 @@ namespace RogueCastle
             get
             {
                 // if dextrocardic, return max mana instead of max health.
-                if (Game.PlayerStats.Traits.X == TraitType.Dextrocardia || Game.PlayerStats.Traits.Y == TraitType.Dextrocardia)
+                if (Stats.Traits.X == TraitType.Dextrocardia || Stats.Traits.Y == TraitType.Dextrocardia)
                 {
                     int maxHealth = (int)((BaseMana +
                         GetEquipmentMana() +
                         (ManaGainPerLevel * Game.PlayerStats.CurrentLevel) +
-                        (Game.PlayerStats.BonusMana * GameEV.ITEM_STAT_MAXMP_AMOUNT) +
+                        (Stats.BonusMana * GameEV.ITEM_STAT_MAXMP_AMOUNT) +
                         SkillSystem.GetSkill(SkillType.Mana_Up).ModifierAmount +
-                        SkillSystem.GetSkill(SkillType.Mana_Up_Final).ModifierAmount) * ClassTotalMPMultiplier) + Game.PlayerStats.LichMana; // Lich mana is separate from modifiers.
+                        SkillSystem.GetSkill(SkillType.Mana_Up_Final).ModifierAmount) * ClassTotalMPMultiplier) + Stats.LichMana; // Lich mana is separate from modifiers.
 
                     if (maxHealth < 1)
                         maxHealth = 1;
@@ -3749,9 +3780,9 @@ namespace RogueCastle
                 {
                     int maxHealth = (int)Math.Round(((BaseHealth + GetEquipmentHealth() +
                         (HealthGainPerLevel * Game.PlayerStats.CurrentLevel) +
-                        (Game.PlayerStats.BonusHealth * GameEV.ITEM_STAT_MAXHP_AMOUNT) +
+                        (Stats.BonusHealth * GameEV.ITEM_STAT_MAXHP_AMOUNT) +
                         SkillSystem.GetSkill(SkillType.Health_Up).ModifierAmount +
-                        SkillSystem.GetSkill(SkillType.Health_Up_Final).ModifierAmount) * ClassTotalHPMultiplier * Game.PlayerStats.LichHealthMod), MidpointRounding.AwayFromZero) + Game.PlayerStats.LichHealth; // Lich health is separate from modifiers.
+                        SkillSystem.GetSkill(SkillType.Health_Up_Final).ModifierAmount) * ClassTotalHPMultiplier * Stats.LichHealthMod), MidpointRounding.AwayFromZero) + Stats.LichHealth; // Lich health is separate from modifiers.
 
                     if (maxHealth < 1)
                         maxHealth = 1;
@@ -3784,7 +3815,7 @@ namespace RogueCastle
             int bonusDamage = 0;
 
             int equipmentCategoryIndex = 0;
-            foreach (sbyte equippedItemIndex in Game.PlayerStats.GetEquippedArray)
+            foreach (sbyte equippedItemIndex in Stats.GetEquippedArray)
             {
                 if (equippedItemIndex > -1)
                 {
@@ -3800,7 +3831,7 @@ namespace RogueCastle
             int bonusMana = 0;
 
             int equipmentCategoryIndex = 0;
-            foreach (sbyte equippedItemIndex in Game.PlayerStats.GetEquippedArray)
+            foreach (sbyte equippedItemIndex in Stats.GetEquippedArray)
             {
                 if (equippedItemIndex > -1)
                 {
@@ -3816,7 +3847,7 @@ namespace RogueCastle
             int bonushealth = 0;
 
             int equipmentCategoryIndex = 0;
-            foreach (sbyte equippedItemIndex in Game.PlayerStats.GetEquippedArray)
+            foreach (sbyte equippedItemIndex in Stats.GetEquippedArray)
             {
                 if (equippedItemIndex > -1)
                 {
@@ -3832,7 +3863,7 @@ namespace RogueCastle
             int bonusArmor = 0;
 
             int equipmentCategoryIndex = 0;
-            foreach (sbyte equippedItemIndex in Game.PlayerStats.GetEquippedArray)
+            foreach (sbyte equippedItemIndex in Stats.GetEquippedArray)
             {
                 if (equippedItemIndex > -1)
                 {
@@ -3848,7 +3879,7 @@ namespace RogueCastle
             int totalWeight = 0;
 
             int equipmentCategoryIndex = 0;
-            foreach (sbyte equippedItemIndex in Game.PlayerStats.GetEquippedArray)
+            foreach (sbyte equippedItemIndex in Stats.GetEquippedArray)
             {
                 if (equippedItemIndex > -1)
                 {
@@ -3864,7 +3895,7 @@ namespace RogueCastle
             int totalMagic = 0;
 
             int equipmentCategoryIndex = 0;
-            foreach (sbyte equippedItemIndex in Game.PlayerStats.GetEquippedArray)
+            foreach (sbyte equippedItemIndex in Stats.GetEquippedArray)
             {
                 if (equippedItemIndex > -1)
                 {
@@ -3880,7 +3911,7 @@ namespace RogueCastle
             float value = 0;
             int equipmentCategoryIndex = 0;
 
-            foreach (sbyte equipmentItemIndex in Game.PlayerStats.GetEquippedArray)
+            foreach (sbyte equipmentItemIndex in Stats.GetEquippedArray)
             {
                 if (equipmentItemIndex > -1)
                 {
@@ -3906,7 +3937,7 @@ namespace RogueCastle
             get
             {
                 return (int)(BaseWeight + SkillSystem.GetSkill(SkillType.Equip_Up).ModifierAmount + SkillSystem.GetSkill(SkillType.Equip_Up_Final).ModifierAmount)
-                  + (Game.PlayerStats.BonusWeight * GameEV.ITEM_STAT_WEIGHT_AMOUNT);
+                  + (Stats.BonusWeight * GameEV.ITEM_STAT_WEIGHT_AMOUNT);
             }
         }
 
@@ -3914,7 +3945,7 @@ namespace RogueCastle
         {
             get 
             {
-                if (Game.PlayerStats.Class == ClassType.Dragon)
+                if (Stats.Class == ClassType.Dragon)
                     return true;
                 return TotalFlightTime > 0; 
             }
@@ -3929,7 +3960,7 @@ namespace RogueCastle
         {
             get
             {
-                if (Game.PlayerStats.Class == ClassType.Knight2)
+                if (Stats.Class == ClassType.Knight2)
                     return true;
                 return false;
             }
@@ -3988,16 +4019,16 @@ namespace RogueCastle
             get 
             {
                 //int classManaGain = 0;
-                //if (Game.PlayerStats.Class == ClassType.Wizard || Game.PlayerStats.Class == ClassType.Wizard2)
+                //if (Stats.Class == ClassType.Wizard || Stats.Class == ClassType.Wizard2)
                 //    classManaGain = GameEV.MAGE_MANA_GAIN;
-                //return m_manaGain + classManaGain + SkillSystem.GetSkill(SkillType.Mana_Regen_Up).ModifierAmount + ((Game.PlayerStats.GetNumberOfEquippedRunes(EquipmentAbilityType.ManaGain) + (int)GetEquipmentSecondaryAttrib(EquipmentSecondaryDataType.ManaDrain)) * GameEV.RUNE_MANA_GAIN)
-                //     + (Game.PlayerStats.GetNumberOfEquippedRunes(EquipmentAbilityType.ManaHPGain) * GameEV.RUNE_MANAHPGAIN); 
+                //return m_manaGain + classManaGain + SkillSystem.GetSkill(SkillType.Mana_Regen_Up).ModifierAmount + ((Stats.GetNumberOfEquippedRunes(EquipmentAbilityType.ManaGain) + (int)GetEquipmentSecondaryAttrib(EquipmentSecondaryDataType.ManaDrain)) * GameEV.RUNE_MANA_GAIN)
+                //     + (Stats.GetNumberOfEquippedRunes(EquipmentAbilityType.ManaHPGain) * GameEV.RUNE_MANAHPGAIN); 
 
                 int classManaGain = 0;
-                if (Game.PlayerStats.Class == ClassType.Wizard || Game.PlayerStats.Class == ClassType.Wizard2)
+                if (Stats.Class == ClassType.Wizard || Stats.Class == ClassType.Wizard2)
                     classManaGain = GameEV.MAGE_MANA_GAIN;
-                return (int)((m_manaGain + classManaGain + SkillSystem.GetSkill(SkillType.Mana_Regen_Up).ModifierAmount + ((Game.PlayerStats.GetNumberOfEquippedRunes(EquipmentAbilityType.ManaGain) + (int)GetEquipmentSecondaryAttrib(EquipmentSecondaryDataType.ManaDrain)) * GameEV.RUNE_MANA_GAIN)
-                     + (Game.PlayerStats.GetNumberOfEquippedRunes(EquipmentAbilityType.ManaHPGain) * GameEV.RUNE_MANAHPGAIN)) * (1 + Game.PlayerStats.TimesCastleBeaten * 0.5f)); 
+                return (int)((m_manaGain + classManaGain + SkillSystem.GetSkill(SkillType.Mana_Regen_Up).ModifierAmount + ((Stats.GetNumberOfEquippedRunes(EquipmentAbilityType.ManaGain) + (int)GetEquipmentSecondaryAttrib(EquipmentSecondaryDataType.ManaDrain)) * GameEV.RUNE_MANA_GAIN)
+                     + (Stats.GetNumberOfEquippedRunes(EquipmentAbilityType.ManaHPGain) * GameEV.RUNE_MANAHPGAIN)) * (1 + Game.PlayerStats.TimesCastleBeaten * 0.5f)); 
                 
             } //TEDDY MODDING SO MANA GAIN IS AN EV
             set { m_manaGain = value; }
@@ -4019,7 +4050,7 @@ namespace RogueCastle
             get
             {
                 float CritChanceBonus = BaseCriticalChance + SkillSystem.GetSkill(SkillType.Crit_Chance_Up).ModifierAmount + GetEquipmentSecondaryAttrib(EquipmentSecondaryDataType.CritChance);
-                switch (Game.PlayerStats.Class)
+                switch (Stats.Class)
                 {
                     case (ClassType.Assassin):
                     case (ClassType.Assassin2):
@@ -4040,7 +4071,7 @@ namespace RogueCastle
                 // +Game.TraitSystem.GetModifierAmount(m_traitArray, TraitType.Crit_Damage_Flat);
                 float CritDamageBonus = BaseCriticalDamageMod + SkillSystem.GetSkill(SkillType.Crit_Damage_Up).ModifierAmount + GetEquipmentSecondaryAttrib(EquipmentSecondaryDataType.CritDamage);
 
-                switch (Game.PlayerStats.Class)
+                switch (Stats.Class)
                 {
                     case (ClassType.Assassin):
                     case (ClassType.Assassin2):
@@ -4064,10 +4095,10 @@ namespace RogueCastle
             get
             {
                 float goldBonus = SkillSystem.GetSkill(SkillType.Gold_Gain_Up).ModifierAmount + GetEquipmentSecondaryAttrib(EquipmentSecondaryDataType.GoldBonus)
-                    + (Game.PlayerStats.GetNumberOfEquippedRunes(EquipmentAbilityType.GoldGain) * GameEV.RUNE_GOLDGAIN_MOD) + (GameEV.NEWGAMEPLUS_GOLDBOUNTY * Game.PlayerStats.TimesCastleBeaten);
+                    + (Stats.GetNumberOfEquippedRunes(EquipmentAbilityType.GoldGain) * GameEV.RUNE_GOLDGAIN_MOD) + (GameEV.NEWGAMEPLUS_GOLDBOUNTY * Game.PlayerStats.TimesCastleBeaten);
                    // + Game.TraitSystem.GetModifierAmount(m_traitArray, TraitType.Gold_Percentage);
 
-                switch (Game.PlayerStats.Class)
+                switch (Stats.Class)
                 {
                     case (ClassType.Banker):
                     case (ClassType.Banker2):
@@ -4079,38 +4110,38 @@ namespace RogueCastle
 
         public int TotalVampBonus
         {
-            //get { return (Game.PlayerStats.GetNumberOfEquippedRunes(EquipmentAbilityType.Vampirism) * 
+            //get { return (Stats.GetNumberOfEquippedRunes(EquipmentAbilityType.Vampirism) * 
             //    GameEV.RUNE_VAMPIRISM_HEALTH_GAIN) + 
             //    ((int)GetEquipmentSecondaryAttrib(EquipmentSecondaryDataType.Vampirism) * GameEV.RUNE_VAMPIRISM_HEALTH_GAIN)
-            //    + (Game.PlayerStats.GetNumberOfEquippedRunes(EquipmentAbilityType.ManaHPGain) * GameEV.RUNE_MANAHPGAIN); }
+            //    + (Stats.GetNumberOfEquippedRunes(EquipmentAbilityType.ManaHPGain) * GameEV.RUNE_MANAHPGAIN); }
 
             get
             {
-                return (int)(((Game.PlayerStats.GetNumberOfEquippedRunes(EquipmentAbilityType.Vampirism) *
+                return (int)(((Stats.GetNumberOfEquippedRunes(EquipmentAbilityType.Vampirism) *
                     GameEV.RUNE_VAMPIRISM_HEALTH_GAIN) +
                     ((int)GetEquipmentSecondaryAttrib(EquipmentSecondaryDataType.Vampirism) * GameEV.RUNE_VAMPIRISM_HEALTH_GAIN)
-                    + (Game.PlayerStats.GetNumberOfEquippedRunes(EquipmentAbilityType.ManaHPGain) * GameEV.RUNE_MANAHPGAIN)) * (1 + Game.PlayerStats.TimesCastleBeaten * 0.5f));
+                    + (Stats.GetNumberOfEquippedRunes(EquipmentAbilityType.ManaHPGain) * GameEV.RUNE_MANAHPGAIN)) * (1 + Game.PlayerStats.TimesCastleBeaten * 0.5f));
             }
         }
 
         public int TotalAirDashes
         {
-            get { return Game.PlayerStats.GetNumberOfEquippedRunes(EquipmentAbilityType.Dash) + (int)GetEquipmentSecondaryAttrib(EquipmentSecondaryDataType.AirDash); }
+            get { return Stats.GetNumberOfEquippedRunes(EquipmentAbilityType.Dash) + (int)GetEquipmentSecondaryAttrib(EquipmentSecondaryDataType.AirDash); }
         }
 
         public int TotalDoubleJumps
         {
-            get { return Game.PlayerStats.GetNumberOfEquippedRunes(EquipmentAbilityType.DoubleJump) + (int)GetEquipmentSecondaryAttrib(EquipmentSecondaryDataType.DoubleJump); }
+            get { return Stats.GetNumberOfEquippedRunes(EquipmentAbilityType.DoubleJump) + (int)GetEquipmentSecondaryAttrib(EquipmentSecondaryDataType.DoubleJump); }
         }
 
         public float TotalFlightTime
         {
-            get { return FlightTime * (Game.PlayerStats.GetNumberOfEquippedRunes(EquipmentAbilityType.Flight) + (int)GetEquipmentSecondaryAttrib(EquipmentSecondaryDataType.Flight)); }
+            get { return FlightTime * (Stats.GetNumberOfEquippedRunes(EquipmentAbilityType.Flight) + (int)GetEquipmentSecondaryAttrib(EquipmentSecondaryDataType.Flight)); }
         }
 
         public float TotalArmor
         {
-            get { return (SkillSystem.GetSkill(SkillType.Armor_Up).ModifierAmount + (Game.PlayerStats.BonusDefense * GameEV.ITEM_STAT_ARMOR_AMOUNT)) + GetEquipmentArmor(); }
+            get { return (SkillSystem.GetSkill(SkillType.Armor_Up).ModifierAmount + (Stats.BonusDefense * GameEV.ITEM_STAT_ARMOR_AMOUNT)) + GetEquipmentArmor(); }
         }
 
         public float TotalDamageReduc
@@ -4137,15 +4168,15 @@ namespace RogueCastle
             get
             {
                 float traitMod = 0;
-                if (Game.PlayerStats.Traits.X == TraitType.Hyperactive || Game.PlayerStats.Traits.Y == TraitType.Hyperactive)
+                if (Stats.Traits.X == TraitType.Hyperactive || Stats.Traits.Y == TraitType.Hyperactive)
                     traitMod = GameEV.TRAIT_MOVESPEED_AMOUNT;
 
                 //float moveSpeed = (this.Speed * flightSpeedMod * 
                 //    (1 + (GetEquipmentSecondaryAttrib(EquipmentSecondaryDataType.MoveSpeed) + traitMod + 
-                //    (Game.PlayerStats.GetNumberOfEquippedRunes(EquipmentAbilityType.MovementSpeed) * GameEV.RUNE_MOVEMENTSPEED_MOD))) * 
+                //    (Stats.GetNumberOfEquippedRunes(EquipmentAbilityType.MovementSpeed) * GameEV.RUNE_MOVEMENTSPEED_MOD))) * 
                 //    ClassMoveSpeedMultiplier);
                 float moveSpeed = (1 + GetEquipmentSecondaryAttrib(EquipmentSecondaryDataType.MoveSpeed) + traitMod +
-                  (Game.PlayerStats.GetNumberOfEquippedRunes(EquipmentAbilityType.MovementSpeed) * GameEV.RUNE_MOVEMENTSPEED_MOD) + ClassMoveSpeedMultiplier);
+                  (Stats.GetNumberOfEquippedRunes(EquipmentAbilityType.MovementSpeed) * GameEV.RUNE_MOVEMENTSPEED_MOD) + ClassMoveSpeedMultiplier);
                 return moveSpeed;
             }
         }
@@ -4155,7 +4186,7 @@ namespace RogueCastle
             get
             {
                 return (GetEquipmentSecondaryAttrib(EquipmentSecondaryDataType.DamageReturn)
-                    + (Game.PlayerStats.GetNumberOfEquippedRunes(EquipmentAbilityType.DamageReturn) * GameEV.RUNE_DAMAGERETURN_MOD));
+                    + (Stats.GetNumberOfEquippedRunes(EquipmentAbilityType.DamageReturn) * GameEV.RUNE_DAMAGERETURN_MOD));
             }
         } 
 
@@ -4183,7 +4214,7 @@ namespace RogueCastle
         {
             get
             {
-                switch (Game.PlayerStats.Class)
+                switch (Stats.Class)
                 {
                     case (ClassType.Barbarian):
                     case (ClassType.Barbarian2):
@@ -4216,7 +4247,7 @@ namespace RogueCastle
         {
             get
             {
-                switch (Game.PlayerStats.Class)
+                switch (Stats.Class)
                 {
                     case (ClassType.Assassin):
                     case (ClassType.Assassin2):
@@ -4230,7 +4261,7 @@ namespace RogueCastle
         {
             get
             {
-                switch (Game.PlayerStats.Class)
+                switch (Stats.Class)
                 {
                     case (ClassType.Wizard):
                     case (ClassType.Wizard2):
@@ -4247,7 +4278,7 @@ namespace RogueCastle
         {
             get
             {
-                switch (Game.PlayerStats.Class)
+                switch (Stats.Class)
                 {
                     case (ClassType.Wizard):
                     case (ClassType.Wizard2):
@@ -4283,7 +4314,7 @@ namespace RogueCastle
         {
             get
             {
-                switch (Game.PlayerStats.Class)
+                switch (Stats.Class)
                 {
                     case (ClassType.Wizard):
                     case (ClassType.Wizard2):
@@ -4319,7 +4350,7 @@ namespace RogueCastle
         {
             get
             {
-                switch (Game.PlayerStats.Class)
+                switch (Stats.Class)
                 {
                     case (ClassType.Ninja):
                     case (ClassType.Ninja2):
@@ -4346,7 +4377,7 @@ namespace RogueCastle
             get { return base.Flip; }
             set
             {
-                if (Game.PlayerStats.Traits.X == TraitType.StereoBlind || Game.PlayerStats.Traits.Y == TraitType.StereoBlind)
+                if (Stats.Traits.X == TraitType.StereoBlind || Stats.Traits.Y == TraitType.StereoBlind)
                 {
                     if (Flip != value)
                     {

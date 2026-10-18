@@ -18,6 +18,8 @@ namespace InputSystem
         private bool m_isDisposed = false;
 
         public bool LockKeyboardInput { get; set; }
+        // Coop: P1 gives up its gamepad when P2 joins on the same (only) pad.
+        public bool LockGamepadInput { get; set; }
 
         public InputMap(PlayerIndex playerIndex, bool useGamePad)
         {
@@ -79,7 +81,7 @@ namespace InputSystem
         public bool JustPressed(int id)
         {
             //if (InputManager.GetPadType(m_playerIndex) == PadTypes.GamePad)
-            if (id < m_buttonList.Count)
+            if (id < m_buttonList.Count && LockGamepadInput == false)
             {
                 //if (id >= m_buttonList.Count) return false;
 
@@ -124,7 +126,7 @@ namespace InputSystem
         public bool Pressed(int id)
         {
             //if (InputManager.GetPadType(m_playerIndex) == PadTypes.GamePad)
-            if (id < m_buttonList.Count)
+            if (id < m_buttonList.Count && LockGamepadInput == false)
             {
                 //if (id >= m_buttonList.Count) return false;
 

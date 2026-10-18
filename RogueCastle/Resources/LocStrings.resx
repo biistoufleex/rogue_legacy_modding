@@ -3456,6 +3456,15 @@
   <data name="LOC_ID_SPELL_TYPE_15" xml:space="preserve">
     <value>Rapid Dagger</value>
   </data>
+  <data name="LOC_ID_COOP_JOINED" xml:space="preserve">
+    <value>Player 2 joined!</value>
+  </data>
+  <data name="LOC_ID_COOP_JOIN_AT_START" xml:space="preserve">
+    <value>Player 2: join at the starting camp</value>
+  </data>
+  <data name="LOC_ID_COOP_LEFT" xml:space="preserve">
+    <value>Player 2 left</value>
+  </data>
   <data name="LOC_ID_SPELL_TYPE_PISTOL" xml:space="preserve">
     <value>Pistol</value>
   </data>

@@ -539,6 +539,7 @@ namespace RogueCastle
                 m_physicsManager.AddObject(enemy);
 
             m_physicsManager.AddObject(m_player);
+            CoopManager.OnRoomEntered(this, room);
         }
 
         public void InitializeEnemies()
@@ -1537,6 +1538,7 @@ namespace RogueCastle
 
                 if (m_player != null)
                     m_player.Update(gameTime);
+                CoopManager.Update(this, gameTime);
 
                 m_enemyHUD.Update(gameTime);
                 m_playerHUD.Update(m_player);
@@ -1549,7 +1551,10 @@ namespace RogueCastle
                     CheckForRoomTransition();
 
                 if ((m_inputMap.Pressed(INPUT_LEFTCONTROL) == false || (m_inputMap.Pressed(INPUT_LEFTCONTROL) == true && (LevelEV.RUN_DEMO_VERSION == true || LevelEV.CREATE_RETAIL_VERSION == true))) && CameraLockedToPlayer == true)
+                {
                     UpdateCamera(); // Must be called AFTER the PhysicsManager Update() because the PhysicsManager changes the player's position depending on what he/she is colliding with.
+                    CoopManager.ConstrainToCamera(this, elapsed); // Coop: both players stay on screen
+                }
 
                 if (Game.PlayerStats.SpecialItem == SpecialItemType.Compass && CurrentRoom.Name != "Start" && CurrentRoom.Name !="Tutorial" && CurrentRoom.Name != "Boss" && CurrentRoom.Name != "Throne" && CurrentRoom.Name != "ChallengeBoss")
                 {
@@ -1622,8 +1627,9 @@ namespace RogueCastle
         {
             if (m_player != null)
             {
-                ScreenManager.Camera.X = (int)(m_player.Position.X + GlobalEV.Camera_XOffset);
-                ScreenManager.Camera.Y = (int)(m_player.Position.Y + GlobalEV.Camera_YOffset);
+                Vector2 cameraFocus = CoopManager.GetCameraFocus(this); // Coop: midpoint of both players (P1 alone in solo)
+                ScreenManager.Camera.X = (int)(cameraFocus.X + GlobalEV.Camera_XOffset);
+                ScreenManager.Camera.Y = (int)(cameraFocus.Y + GlobalEV.Camera_YOffset);
             }
 
             if (m_currentRoom != null)
@@ -1655,7 +1661,8 @@ namespace RogueCastle
         //HandleInput is called AFTER Update().
         public override void HandleInput()
         {
-            if (Game.GlobalInput.JustPressed(InputMapType.MENU_PAUSE) && CurrentRoom.Name != "Ending")
+            bool coopConsumedInput = CoopManager.HandleInput(this); // Coop: P2 join/leave/class/pause + P2 controls
+            if (coopConsumedInput == false && Game.GlobalInput.JustPressed(InputMapType.MENU_PAUSE) && CurrentRoom.Name != "Ending")
                 (ScreenManager as RCScreenManager).DisplayScreen(ScreenType.Pause, true);
 
             if (LevelEV.ENABLE_DEBUG_INPUT == true)
@@ -2164,6 +2171,7 @@ namespace RogueCastle
             //Camera.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             if (m_player.IsKilled == false)
                 m_player.Draw(Camera);
+            CoopManager.Draw(this, Camera);
 
             if (LevelEV.CREATE_RETAIL_VERSION == false)
             {
@@ -2236,6 +2244,7 @@ namespace RogueCastle
             m_projectileIconPool.Draw(Camera);
 
             m_playerHUD.Draw(Camera);
+            CoopManager.DrawHUD(this, Camera);
 
             if (m_lastEnemyHit != null && m_enemyHUDCounter > 0)
                 m_enemyHUD.Draw(Camera);
@@ -2943,6 +2952,7 @@ namespace RogueCastle
         public override void OnEnter()
         {
             (ScreenManager.Game as Game).SaveManager.ResetAutosave();
+            CoopManager.OnLevelEnter(this); // Coop: P2 follows into every new life/level
             m_player.DisableAllWeight = false; // Fixes bug where you translocate right before enter the castle, resulting in screwed up gravity.
             m_player.StopAllSpells();
             StopScreenShake();
