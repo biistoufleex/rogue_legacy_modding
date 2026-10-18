@@ -1,5 +1,13 @@
 # Plan — Coop local 2 joueurs (drop-in façon arcade)
 
+> **État (branche `coop`)** : phases 0 à 6 implémentées — code dans `RogueCastle/src/Coop/` +
+> points d'accroche dans `ProceduralLevelScreen`, `PlayerObj`, `EnemyObj`, `InputMap`.
+> Compilé et lancé en solo sans régression visible ; **pas encore testé avec 2 manettes**.
+> Écarts par rapport au plan : pas d'overlay de debug manettes (phase 0) ; ajout d'un anti-blocage
+> (P2 immobile sur un bord pendant que P1 pousse l'autre → P2 ramené vers P1 après 2 s).
+> Limites connues : certains ennemis gardent P1 comme cible dans leurs actions pré-calculées ;
+> seul P1 peut naviguer dans le menu pause.
+
 > Branche cible : `coop` (partant de `guns-prototype`). Tout en local, rien poussé.
 > Toutes les décisions de gameplay ci-dessous ont été prises pour toi ; elles sont regroupées
 > au §2 et chiffrées dans une classe `CoopEV` pour pouvoir les changer sans toucher au code.
