@@ -24,6 +24,7 @@ namespace RogueCastle
         private static PartnerState m_state;
         private static float m_downTimer;
         private static float m_offscreenTimer;
+        private static float m_pinnedTimer;
         private static float m_selectHeld;
         private static float m_retargetTimer;
 
@@ -78,8 +79,9 @@ namespace RogueCastle
                 m_selectHeld = 0;
             }
 
-            // START on P2's pad opens the shared pause screen (on a shared pad P1's GlobalInput already does it).
-            if (m_sharesP1Pad == false && InputManager.JustPressed(Buttons.Start, m_padIndex) && level.CurrentRoom.Name != "Ending")
+            // START on P2's pad opens the shared pause screen (P1's GlobalInput never reads this pad: it is either
+            // another index, or pad 1 with LockGamepadInput set).
+            if (InputManager.JustPressed(Buttons.Start, m_padIndex) && level.CurrentRoom.Name != "Ending")
             {
                 (level.ScreenManager as RCScreenManager).DisplayScreen(ScreenType.Pause, true);
                 consumed = true;
@@ -454,8 +456,23 @@ namespace RogueCastle
             float minX = cam.Left > room.Left ? cam.Left + CoopEV.SCREEN_MARGIN : float.MinValue;
             float maxX = cam.Right < room.Right ? cam.Right - CoopEV.SCREEN_MARGIN : float.MaxValue;
 
-            ClampX(level.Player, minX, maxX);
-            ClampX(Partner, minX, maxX);
+            bool p1Pinned = ClampX(level.Player, minX, maxX);
+            bool p2Pinned = ClampX(Partner, minX, maxX) || Partner.X <= minX + 4 || Partner.X >= maxX - 4; // resting on an edge counts
+
+            // Anti soft-lock: an idle P2 pinned to one edge while P1 pushes the other one gets pulled to P1.
+            if (p1Pinned && p2Pinned)
+            {
+                m_pinnedTimer += elapsed;
+                if (m_pinnedTimer >= CoopEV.PINNED_TELEPORT_DELAY)
+                {
+                    m_pinnedTimer = 0;
+                    PlaceNextToP1(level);
+                    SoundManager.PlaySound("mfqt_teleport_in");
+                    level.ImpactEffectPool.SpellCastEffect(Partner.Position, 0, false);
+                }
+            }
+            else
+                m_pinnedTimer = 0;
 
             Rectangle visible = cam;
             visible.Inflate(40, 40);
@@ -474,18 +491,22 @@ namespace RogueCastle
             }
         }
 
-        private static void ClampX(PlayerObj player, float minX, float maxX)
+        // Returns true if the player had to be pushed back inside the screen.
+        private static bool ClampX(PlayerObj player, float minX, float maxX)
         {
             if (player.X < minX)
             {
                 player.X = minX;
                 if (player.AccelerationX < 0) player.AccelerationX = 0;
+                return true;
             }
-            else if (player.X > maxX)
+            if (player.X > maxX)
             {
                 player.X = maxX;
                 if (player.AccelerationX > 0) player.AccelerationX = 0;
+                return true;
             }
+            return false;
         }
 
         #endregion
